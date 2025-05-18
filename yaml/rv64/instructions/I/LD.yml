@@ -1,0 +1,12 @@
+name: LD
+format: I.yml
+fixed_values:
+  opcode: 0x03
+  funct3: 0x3
+inputs:
+  - rd
+  - rs1
+  - imm
+description: |
+  LD loads a doubleword from memory and stores it in rd.
+  rd = MEM[rs1 + imm]

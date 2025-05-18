@@ -1,0 +1,20 @@
+name: S
+fullname: Store Type
+asm_format: "{mnemonic} {rs2}, {imm}({rs1})"
+fields:
+  - name: imm
+    bits: [31:25, 11:7]
+    type: immediate
+  - name: rs2
+    bits: [24:20]
+    type: register
+  - name: rs1
+    bits: [19:15]
+    type: register
+  - name: funct3
+    bits: [14:12]
+    type: funct
+  - name: opcode
+    bits: [6:0]
+    type: opcode
+description: S-type format for store operations.

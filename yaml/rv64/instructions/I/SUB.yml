@@ -1,0 +1,12 @@
+name: SUB
+format: R.yml
+opcode: 0x33
+funct3: 0x0
+funct7: 0x20
+inputs:
+  - rd
+  - rs1
+  - rs2
+description: |
+  SUB subtracts the value in rs2 from rs1 and stores the result in rd.
+  rd = rs1 - rs2

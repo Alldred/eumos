@@ -1,0 +1,12 @@
+name: LBU
+format: I.yml
+fixed_values:
+  opcode: 0x03
+  funct3: 0x4
+inputs:
+  - rd
+  - rs1
+  - imm
+description: |
+  LBU loads a byte from memory, zero-extends it, and stores it in rd.
+  rd = zero_extend(MEM[rs1 + imm][7:0])

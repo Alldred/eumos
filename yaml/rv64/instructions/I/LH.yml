@@ -1,0 +1,12 @@
+name: LH
+format: I.yml
+fixed_values:
+  opcode: 0x03
+  funct3: 0x1
+inputs:
+  - rd
+  - rs1
+  - imm
+description: |
+  LH loads a halfword from memory, sign-extends it, and stores it in rd.
+  rd = sign_extend(MEM[rs1 + imm][15:0])

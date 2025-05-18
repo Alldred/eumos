@@ -1,0 +1,12 @@
+name: BGE
+format: B.yml
+fixed_values:
+  opcode: 0x63
+  funct3: 0x5
+inputs:
+  - rs1
+  - rs2
+  - imm
+description: |
+  BGE branches to the target address if rs1 is greater than or equal to rs2 (signed).
+  if (rs1 >= rs2) pc += imm
