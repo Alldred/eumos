@@ -1,6 +1,6 @@
 name: R
 fullname: Register Type
-asm_format: "{mnemonic} {dest}, {src1}, {src2}"
+asm_format: "{mnemonic} {rd}, {rs1}, {rs2}"
 fields:
   - name: funct7
     bits: [31:25]

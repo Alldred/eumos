@@ -1,8 +1,9 @@
 name: SUB
 format: R.yml
-opcode: 0x33
-funct3: 0x0
-funct7: 0x20
+fixed_values:
+  opcode: 0x33
+  funct3: 0x0
+  funct7: 0x20
 inputs:
   - rd
   - rs1
