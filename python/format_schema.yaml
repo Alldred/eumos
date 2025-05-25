@@ -1,0 +1,22 @@
+type: map
+mapping:
+  name: {type: str, required: true}
+  fullname: {type: str, required: true}
+  asm_format: {type: str, required: true}
+  fields:
+    type: seq
+    required: true
+    sequence:
+      - type: map
+        mapping:
+          name: {type: str, required: true}
+          type: {type: str, required: true}
+          bits: {type: any}
+          parts:
+            type: seq
+            sequence:
+              - type: map
+                mapping:
+                  bits: {type: any}
+  description: {type: str}
+  extension: {type: str, required: false}

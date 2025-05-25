@@ -1,5 +1,6 @@
 name: BEQ
-format: B.yml
+mnemonic: beq
+format: B
 fixed_values:
   opcode: 0x63
   funct3: 0x0
@@ -7,6 +8,7 @@ inputs:
   - rs1
   - rs2
   - imm
+extension: "I"
 description: |
   BEQ branches to the target address if rs1 and rs2 are equal.
   if (rs1 == rs2) pc += imm

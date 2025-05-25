@@ -1,5 +1,6 @@
 name: ADD
-format: R.yml
+mnemonic: add
+format: R
 fixed_values:
   funct3: 0x0
   funct7: 0x00
@@ -8,6 +9,7 @@ inputs:
   - rd
   - rs1
   - rs2
+extension: "I"
 description: |
   ADD adds the values in rs1 and rs2 and stores the result in rd.
   rd = rs1 + rs2

@@ -1,8 +1,10 @@
 name: FENCE
-format: I.yml
+mnemonic: fence
+format: I
 fixed_values:
   opcode: 0x0F
   funct3: 0x0
 inputs: []
+extension: "I"
 description: |
   FENCE orders memory and I/O operations as specified by the pred and succ fields.

@@ -1,5 +1,6 @@
 name: SUB
-format: R.yml
+mnemonic: sub
+format: R
 fixed_values:
   opcode: 0x33
   funct3: 0x0
@@ -8,6 +9,7 @@ inputs:
   - rd
   - rs1
   - rs2
+extension: "I"
 description: |
   SUB subtracts the value in rs2 from rs1 and stores the result in rd.
   rd = rs1 - rs2

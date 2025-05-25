@@ -1,6 +1,7 @@
 name: BLT
+mnemonic: blt
 format: B
-extension: I
+extension: "I"
 fixed_values:
   opcode: 0x63
   funct3: 0x4

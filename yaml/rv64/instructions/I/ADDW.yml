@@ -1,5 +1,6 @@
 name: ADDW
-format: R.yml
+mnemonic: addw
+format: R
 fixed_values:
   opcode: 0x3B
   funct3: 0x0
@@ -8,6 +9,7 @@ inputs:
   - rd
   - rs1
   - rs2
+extension: "I"
 description: |
   ADDW adds the values in rs1 and rs2, sign-extends the lower 32 bits, and stores the result in rd.
   rd = sign_extend((rs1 + rs2)[31:0])
