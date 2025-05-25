@@ -6,7 +6,9 @@ fields:
     type: immediate
     parts:
       - bits: [31,25]
+        operand_bits: [11,5]
       - bits: [11,7]
+        operand_bits: [4,0]
   - name: rs2
     bits: [24,20]
     type: register

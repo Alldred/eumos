@@ -14,9 +14,11 @@ mapping:
           bits: {type: any}
           parts:
             type: seq
+            required: false
             sequence:
               - type: map
                 mapping:
-                  bits: {type: any}
+                  bits: {type: any, required: true}
+                  operand_bits: {type: any, required: false}
   description: {type: str}
   extension: {type: str, required: false}

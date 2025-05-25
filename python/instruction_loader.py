@@ -6,7 +6,8 @@ from pykwalify.core import Core
 
 @dataclass
 class FieldPart:
-    bits: Any
+    bits: Any  # bits in the opcode
+    operand_bits: Any = None  # bits in the operand (new field)
 
 @dataclass
 class FieldDef:
@@ -31,6 +32,13 @@ class Operand:
     data: Any = None
 
 @dataclass
+class FieldEncoding:
+    name: str
+    type: str
+    bits: Any = None
+    parts: Optional[List[FieldPart]] = None
+
+@dataclass
 class InstructionDef:
     name: str
     mnemonic: str
@@ -40,6 +48,7 @@ class InstructionDef:
     description: str = ""
     inputs: List[str] = field(default_factory=list)
     operands: Dict[str, Operand] = field(default_factory=dict)
+    fields: Dict[str, FieldEncoding] = field(default_factory=dict)
 
 def validate_yaml_schema(yaml_path, schema_path):
     core = Core(source_file=yaml_path, schema_files=[schema_path])
@@ -60,7 +69,8 @@ def load_format(format_dir, format_name):
     fields = []
     for fld in data.get("fields", []):
         if 'parts' in fld:
-            parts = [FieldPart(**p) for p in fld['parts']]
+            # Support operand_bits in YAML, default to None if not present
+            parts = [FieldPart(bits=p['bits'], operand_bits=p.get('operand_bits')) for p in fld['parts']]
             fields.append(FieldDef(name=fld['name'], type=fld['type'], parts=parts))
         else:
             fields.append(FieldDef(**fld))
@@ -82,20 +92,20 @@ def load_instruction(instr_path, format_dir):
     if 'fixed_values' in data:
         fixed_values = {k: data['fixed_values'][k] for k in fixed_keys if k in data['fixed_values']}
     operands = {}
+    fields = {}
     for field in fmt.fields:
         # Handle split fields (parts)
+        # breakpoint()
         if hasattr(field, 'parts') and field.parts:
             # For split fields, sum all bits from all parts
             total_bits = 0
             for part in field.parts:
                 bits = part.bits
                 if isinstance(bits, list):
-                    # bits: [msb, lsb]
                     if len(bits) == 2:
                         msb, lsb = bits
                         total_bits += abs(msb - lsb) + 1
                     else:
-                        # single bit
                         total_bits += 1
             operands[field.name] = Operand(
                 name=field.name,
@@ -103,33 +113,30 @@ def load_instruction(instr_path, format_dir):
                 size=total_bits,
                 data=fixed_values.get(field.name)
             )
+            fields[field.name] = FieldEncoding(
+                name=field.name,
+                type=field.type,
+                parts=field.parts
+            )
         else:
-            if isinstance(field.bits, list):
-                all_bits = []
-                for b in field.bits:
-                    if isinstance(b, list):
-                        msb, lsb = b[0], b[1]
-                        all_bits.extend(range(lsb, msb+1))
-                    elif isinstance(b, str) and ":" in b:
-                        msb, lsb = map(int, b.split(":"))
-                        all_bits.extend(range(lsb, msb+1))
-                    elif isinstance(b, int):
-                        all_bits.append(b)
-                size = len(all_bits) if all_bits else None
-            elif isinstance(field.bits, str) and ":" in field.bits:
-                msb, lsb = map(int, field.bits.split(":"))
+            # field.bits is always list[int] with either 1 or 2 values
+            bits = field.bits
+            if len(bits) == 2:
+                msb, lsb = bits
                 size = abs(msb - lsb) + 1
             else:
-                try:
-                    size = 1
-                except Exception:
-                    size = None
+                size = 1
             data_val = fixed_values.get(field.name)
             operands[field.name] = Operand(
                 name=field.name,
                 type=field.type,
                 size=size,
                 data=data_val
+            )
+            fields[field.name] = FieldEncoding(
+                name=field.name,
+                type=field.type,
+                bits=field.bits
             )
     return InstructionDef(
         name=data["name"],
@@ -139,7 +146,8 @@ def load_instruction(instr_path, format_dir):
         format=fmt,
         description=data.get("description", ""),
         inputs=data.get("inputs", []),
-        operands=operands
+        operands=operands,
+        fields=fields
     )
 
 def load_all_instructions(
@@ -168,10 +176,13 @@ if __name__ == "__main__":
     # Load all instructions and print the first one
     instrs = load_all_instructions()
     if instrs:
-        first_instr = next(iter(instrs.values()))
+        # first_instr = next(iter(instrs.values()))
+        first_instr = instrs['sd']
         for k, v in first_instr.__dict__.items():
             if isinstance(v, dict):
-                print(f"{k}: {{key: str(item) for key, item in v.items()}}")
+                print(f"{k}:")
+                for key, item in v.items():
+                    print(f"  {key}: {item}")
             else:
                 print(f"{k}: {v}")
     else:
