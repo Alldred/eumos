@@ -100,12 +100,11 @@ def load_instruction(instr_path, format_dir):
             total_bits = 0
             for part in field.parts:
                 bits = part.bits
-                if isinstance(bits, list):
-                    if len(bits) == 2:
-                        msb, lsb = bits
-                        total_bits += abs(msb - lsb) + 1
-                    else:
-                        total_bits += 1
+                if len(bits) == 2:
+                    msb, lsb = bits
+                    total_bits += abs(msb - lsb) + 1
+                else:
+                    total_bits += 1
             operands[field.name] = Operand(
                 name=field.name,
                 type=field.type,
