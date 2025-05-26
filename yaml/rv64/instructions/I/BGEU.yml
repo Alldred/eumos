@@ -1,0 +1,14 @@
+name: BGEU
+mnemonic: bgeu
+format: B
+fixed_values:
+  opcode: 0x63
+  funct3: 0x7
+inputs:
+  - rs1
+  - rs2
+  - imm
+extension: "I"
+description: |
+  BGEU branches to the target address if rs1 is greater than or equal to rs2 (unsigned).
+  if (rs1 >= rs2) pc += imm

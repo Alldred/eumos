@@ -1,0 +1,20 @@
+name: I
+fullname: Immediate Type
+asm_format: "{mnemonic} {rd}, {rs1}, {imm}"
+fields:
+  - name: imm
+    bits: [31,20]
+    type: immediate
+  - name: rs1
+    bits: [19,15]
+    type: register
+  - name: funct3
+    bits: [14,12]
+    type: funct
+  - name: rd
+    bits: [11,7]
+    type: register
+  - name: opcode
+    bits: [6,0]
+    type: opcode
+description: I-type format for immediate operations.

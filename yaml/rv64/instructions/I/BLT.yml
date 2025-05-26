@@ -1,0 +1,14 @@
+name: BLT
+mnemonic: blt
+format: B
+extension: "I"
+fixed_values:
+  opcode: 0x63
+  funct3: 0x4
+inputs:
+  - rs1
+  - rs2
+  - imm
+description: |
+  BLT branches to the target address if rs1 is less than rs2 (signed).
+  if (rs1 < rs2) pc += imm

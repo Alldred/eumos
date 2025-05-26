@@ -1,0 +1,14 @@
+name: ADDIW
+mnemonic: addiw
+format: I
+fixed_values:
+  opcode: 0x1B
+  funct3: 0x0
+inputs:
+  - rd
+  - rs1
+  - imm
+extension: "I"
+description: |
+  ADDIW adds the value in rs1 and the immediate, sign-extends the lower 32 bits, and stores the result in rd.
+  rd = sign_extend((rs1 + imm)[31:0])
