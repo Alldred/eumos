@@ -1,0 +1,13 @@
+[project]
+name = "slate"
+version = "0.1.0"
+description = "Python RISCV manual"
+readme = "README.md"
+license = "MIT"
+dependencies = [
+    "pre-commit"
+]
+authors = [
+    "Stuart Alldred <stuartalldred@gmail.com>",
+]
+requires-python = ">= 3.13  "
