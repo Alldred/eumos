@@ -95,7 +95,6 @@ def load_instruction(instr_path, format_dir):
     fields = {}
     for field in fmt.fields:
         # Handle split fields (parts)
-        # breakpoint()
         if hasattr(field, 'parts') and field.parts:
             # For split fields, sum all bits from all parts
             total_bits = 0
