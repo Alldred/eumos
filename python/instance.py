@@ -1,4 +1,7 @@
 # SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Noodle-Bytes. All Rights Reserved
+
+# SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
 """User data layered on ISA: instruction instances, register context, and operand-level combined view."""
@@ -71,7 +74,7 @@ def _reg_to_index(reg: Union[int, str]) -> Optional[int]:
         if 0 <= reg <= 31:
             return reg
         return None
-    idx = _GPR_NAME_TO_INDEX.get(reg.lower() if isinstance(reg, str) else reg)
+    idx = _GPR_NAME_TO_INDEX.get(reg.lower())
     return idx
 
 
