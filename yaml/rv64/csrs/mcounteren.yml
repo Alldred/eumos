@@ -9,3 +9,7 @@ access: read-write
 width: 64
 extension: "Zicsr"
 reset_value: 0
+fields:
+  - name: value
+    bits: [63, 0]
+    description: Full register value; counter visibility in S-mode
