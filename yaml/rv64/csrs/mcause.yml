@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: mcause
+address: 0x342
+description: Machine trap cause; exception or interrupt type.
+privilege: machine
+access: read-write
+width: 64
+extension: "Zicsr"

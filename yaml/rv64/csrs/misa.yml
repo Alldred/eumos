@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: misa
+address: 0x301
+description: Machine ISA register; reports supported extensions and XLEN.
+privilege: machine
+access: read-write
+width: 64
+extension: "Zicsr"

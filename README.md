@@ -34,3 +34,11 @@ uv run pytest
 - **FormatDef** has `asm_format` (e.g. `"{mnemonic} {rd}, {rs1}, {imm}"`) and `fields` (list of **FieldDef**). Encoding bit ranges come from `fields`; for split immediates (S/B type), use `parts[].bits` and `parts[].operand_bits`.
 - For user data (concrete operand values, register names/values), use **InstructionInstance** and **RegisterContext** from `instance`; `get_operand_info(name)` returns **OperandInfo**, which combines ISA and user data per operand.
 - **Decoder**: use **decoder.Decoder** or **decoder.decode(word)** to decode a 32-bit instruction word into an **InstructionInstance** with `instruction` and `operand_values` filled from the encoding (rd, rs1, rs2, imm, etc.). Without a **RegisterContext**, GPR values and resolved names are not populated; only what can be decoded from the bits is set.
+
+## CSRs
+
+- **load_all_csrs()** (from `csr_loader`) returns a dict: name (e.g. `"mstatus"`, `"mepc"`) -> **CSRDef**. CSR YAML files live under `yaml/rv64/csrs/` and are validated by `yaml/schemas/csr_schema.yaml`.
+- **CSRDef** has `name`, `address` (12-bit), `description`, and optional `privilege`, `access`, `width`, `extension`.
+- **ISA** (from `instance`) holds optional `instructions` and/or `csrs`; you can load either or both (e.g. `ISA(instructions=load_all_instructions(), csrs=load_all_csrs())`). When CSRs are loaded, `isa.csrs_by_address` maps 12-bit address -> **CSRDef** for resolving the `imm` operand of CSR instructions.
+- **CSRContext** (from `instance`) maps CSR address or name to runtime values; optionally pass `csr_defs` so that `set`/`get_value` accept names (e.g. `"mstatus"`) and `get_name`/`get_address` work.
+- For CSR instructions (e.g. `csrrw`, `csrrs`), the `imm` operand in `operand_values` is the 12-bit CSR address. Use **ISA.resolve_csr(instruction_instance, csr_context)** to get the **CSRDef** and current value (if a **CSRContext** is provided).
