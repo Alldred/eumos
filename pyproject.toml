@@ -5,9 +5,29 @@ description = "Python RISCV manual"
 readme = "README.md"
 license = "MIT"
 dependencies = [
-    "pre-commit"
+    "pre-commit",
+    "pykwalify",
+    "PyYAML",
 ]
 authors = [
     "Stuart Alldred <stuartalldred@gmail.com>",
 ]
-requires-python = ">= 3.13  "
+requires-python = ">= 3.13"
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-cov"]
+
+[tool.pytest.ini_options]
+pythonpath = ["python"]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["python"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]

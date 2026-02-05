@@ -1,0 +1,101 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Noodle-Bytes. All Rights Reserved
+
+"""Tests for instance.InstructionInstance, RegisterContext, OperandInfo (operand-level combination)."""
+
+from pathlib import Path
+
+import instruction_loader
+from instance import InstructionInstance, OperandInfo, RegisterContext
+
+
+def _paths():
+    repo = Path(__file__).resolve().parent.parent
+    return {
+        "format_dir": repo / "yaml" / "rv64" / "formats",
+        "addi_yml": repo / "yaml" / "rv64" / "instructions" / "I" / "ADDI.yml",
+    }
+
+
+def test_storage_separate_isa_has_no_user_fields():
+    """ISA types (InstructionDef, Operand) have no user data fields."""
+    p = _paths()
+    instr = instruction_loader.load_instruction(
+        str(p["addi_yml"]), str(p["format_dir"])
+    )
+    assert hasattr(instr, "operands") and hasattr(instr, "fields")
+    assert not hasattr(instr, "operand_values")
+    op = instr.operands["rs1"]
+    assert (
+        not hasattr(op, "value") or getattr(op, "data", None) is None
+    )  # data is fixed ISA, not user value
+
+
+def test_get_operand_info_combines_isa_and_user():
+    """get_operand_info returns OperandInfo with ISA (name, type, size, encoding) and user value."""
+    p = _paths()
+    instr = instruction_loader.load_instruction(
+        str(p["addi_yml"]), str(p["format_dir"])
+    )
+    operand_values = {"rd": 3, "rs1": 1, "imm": 0x100}
+    instance = InstructionInstance(instruction=instr, operand_values=operand_values)
+    rs1 = instance.get_operand_info("rs1")
+    assert rs1 is not None
+    assert isinstance(rs1, OperandInfo)
+    assert rs1.name == "rs1"
+    assert rs1.type == "register"
+    assert rs1.size == 5
+    assert rs1.bits == [19, 15]
+    assert rs1.value == 1
+    assert rs1.resolved_name is None
+    assert rs1.resolved_value is None
+
+
+def test_get_operand_info_resolves_register_via_context():
+    """For register operands, OperandInfo includes resolved_name and resolved_value from RegisterContext."""
+    p = _paths()
+    instr = instruction_loader.load_instruction(
+        str(p["addi_yml"]), str(p["format_dir"])
+    )
+    operand_values = {"rd": 3, "rs1": 1, "imm": 0x100}
+    regs = RegisterContext()
+    regs.set(1, name="gp1", value=0x1234)
+    instance = InstructionInstance(
+        instruction=instr,
+        operand_values=operand_values,
+        register_context=regs,
+    )
+    rs1 = instance.get_operand_info("rs1")
+    assert rs1 is not None
+    assert rs1.value == 1
+    assert rs1.resolved_name == "gp1"
+    assert rs1.resolved_value == 0x1234
+
+
+def test_operands_yields_operand_info_per_operand():
+    """operands() yields OperandInfo for each operand; combined view at operand level."""
+    p = _paths()
+    instr = instruction_loader.load_instruction(
+        str(p["addi_yml"]), str(p["format_dir"])
+    )
+    operand_values = {"rd": 3, "rs1": 1, "imm": 0x100}
+    instance = InstructionInstance(instruction=instr, operand_values=operand_values)
+    infos = list(instance.operands())
+    names = [info.name for info in infos]
+    assert "rd" in names
+    assert "rs1" in names
+    assert "imm" in names
+    for info in infos:
+        assert isinstance(info, OperandInfo)
+        assert info.name and info.type and info.size >= 0
+
+
+def test_instruction_only_isa_uses_instruction_def_operands():
+    """Callers that only need ISA use InstructionDef.operands; no user data there."""
+    p = _paths()
+    instr = instruction_loader.load_instruction(
+        str(p["addi_yml"]), str(p["format_dir"])
+    )
+    assert "rs1" in instr.operands
+    assert instr.operands["rs1"].type == "register"
+    assert instr.operands["rs1"].size == 5
