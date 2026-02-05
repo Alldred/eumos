@@ -1,0 +1,14 @@
+name: BLTU
+mnemonic: bltu
+format: B
+fixed_values:
+  opcode: 0x63
+  funct3: 0x6
+inputs:
+  - rs1
+  - rs2
+  - imm
+extension: "I"
+description: |
+  BLTU branches to the target address if rs1 is less than rs2 (unsigned).
+  if (rs1 < rs2) pc += imm

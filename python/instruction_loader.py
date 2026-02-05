@@ -61,7 +61,9 @@ def load_yaml(filepath):
 
 def load_format(format_dir, format_name):
     path = os.path.join(format_dir, format_name + '.yml')
-    schema_path = os.path.join(os.path.dirname(__file__), 'format_schema.yaml')
+    # Schema is in yaml/schemas/ relative to project root
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    schema_path = os.path.join(project_root, 'yaml', 'schemas', 'format_schema.yaml')
     validate_yaml_schema(path, schema_path)
     if not os.path.exists(path):
         raise FileNotFoundError(f"Format file not found: {path}")
@@ -83,7 +85,9 @@ def load_format(format_dir, format_name):
     )
 
 def load_instruction(instr_path, format_dir):
-    schema_path = os.path.join(os.path.dirname(__file__), 'instruction_schema.yaml')
+    # Schema is in yaml/schemas/ relative to project root
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    schema_path = os.path.join(project_root, 'yaml', 'schemas', 'instruction_schema.yaml')
     validate_yaml_schema(instr_path, schema_path)
     data = load_yaml(instr_path)
     fmt = load_format(format_dir, data["format"])

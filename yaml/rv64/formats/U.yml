@@ -1,0 +1,14 @@
+name: U
+fullname: Upper Immediate Type
+asm_format: "{mnemonic} {rd}, {imm}"
+fields:
+  - name: imm
+    bits: [31,12]
+    type: immediate
+  - name: rd
+    bits: [11,7]
+    type: register
+  - name: opcode
+    bits: [6,0]
+    type: opcode
+description: U-type format for upper immediate operations (LUI, AUIPC).

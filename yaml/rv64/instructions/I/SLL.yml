@@ -1,0 +1,15 @@
+name: SLL
+mnemonic: sll
+format: R
+fixed_values:
+  opcode: 0x33
+  funct3: 0x1
+  funct7: 0x00
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "I"
+description: |
+  SLL performs a logical left shift of rs1 by the amount in rs2[5:0] and stores the result in rd.
+  rd = rs1 << rs2[5:0]

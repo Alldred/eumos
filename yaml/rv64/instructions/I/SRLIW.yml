@@ -1,0 +1,15 @@
+name: SRLIW
+mnemonic: srliw
+format: I
+fixed_values:
+  opcode: 0x1B
+  funct3: 0x5
+  funct7: 0x00
+inputs:
+  - rd
+  - rs1
+  - imm
+extension: "I"
+description: |
+  SRLIW performs a logical right shift of the lower 32 bits of rs1 by the amount in imm[4:0], sign-extends the result, and stores it in rd.
+  rd = sign_extend((rs1[31:0] >> imm[4:0])[31:0])

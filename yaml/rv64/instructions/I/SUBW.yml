@@ -1,0 +1,15 @@
+name: SUBW
+mnemonic: subw
+format: R
+fixed_values:
+  opcode: 0x3B
+  funct3: 0x0
+  funct7: 0x20
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "I"
+description: |
+  SUBW subtracts the value in rs2 from rs1, sign-extends the lower 32 bits, and stores the result in rd.
+  rd = sign_extend((rs1 - rs2)[31:0])

@@ -1,0 +1,13 @@
+name: CSRRWI
+mnemonic: csrrwi
+format: I
+fixed_values:
+  opcode: 0x73
+  funct3: 0x5
+inputs:
+  - rd
+  - imm
+extension: "I"
+description: |
+  CSRRWI atomically swaps values in the CSR and a zero-extended immediate.
+  t = CSR[imm[11:0]]; CSR[imm[11:0]] = zimm; rd = t

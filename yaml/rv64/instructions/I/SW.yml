@@ -1,0 +1,14 @@
+name: SW
+mnemonic: sw
+format: S
+fixed_values:
+  opcode: 0x23
+  funct3: 0x2
+inputs:
+  - rs2
+  - rs1
+  - imm
+extension: "I"
+description: |
+  SW stores the least significant word in rs2 to the memory address computed by rs1 plus the immediate.
+  MEM[rs1 + imm] = rs2[31:0]
