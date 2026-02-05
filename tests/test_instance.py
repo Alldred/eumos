@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Noodle-Bytes. All Rights Reserved
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
 """Tests for instance.InstructionInstance, RegisterContext, OperandInfo (operand-level combination)."""
 
@@ -70,6 +70,30 @@ def test_get_operand_info_resolves_register_via_context():
     assert rs1.value == 1
     assert rs1.resolved_name == "gp1"
     assert rs1.resolved_value == 0x1234
+
+
+def test_register_context_maps_gpr_index_to_riscv_name():
+    """RegisterContext maps GPR index to RISC-V ABI name; get_name returns it when no override."""
+    regs = RegisterContext()
+    assert regs.get_name(0) == "zero"
+    assert regs.get_name(1) == "ra"
+    assert regs.get_name(2) == "sp"
+    assert regs.get_name(8) == "s0"
+    assert regs.get_name(10) == "a0"
+
+
+def test_register_context_set_accepts_index_or_name():
+    """set() accepts either GPR index (int) or RISC-V name (e.g. 'ra', 'x1')."""
+    regs = RegisterContext()
+    regs.set(1, value=0x1000)
+    assert regs.get_name(1) == "ra"
+    assert regs.get_value(1) == 0x1000
+    regs.set("sp", value=0x8000)
+    assert regs.get_name(2) == "sp"
+    assert regs.get_value(2) == 0x8000
+    regs.set("x5", value=0x5555)
+    assert regs.get_name(5) == "t0"
+    assert regs.get_value(5) == 0x5555
 
 
 def test_operands_yields_operand_info_per_operand():
