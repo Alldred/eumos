@@ -45,14 +45,21 @@ def test_load_csr_mstatus_has_fields():
     assert mie.access is None  # uses CSR default
     mpp = csr.fields["MPP"]
     assert mpp.bits == (12, 11)
+    assert "reserved" in csr.fields
+    assert csr.fields["reserved"].bits == (2, 0)
+    assert "reserved1" in csr.fields
+    assert "reserved3" in csr.fields
+    assert csr.fields["reserved3"].bits == (63, 13)
 
 
-def test_load_csr_mepc_has_reset_value_no_fields():
+def test_load_csr_mepc_has_reset_value_and_full_width_field():
     p = _paths()
     csrs = csr_loader.load_all_csrs(str(p["csr_root"]))
     mepc = csrs["mepc"]
     assert mepc.reset_value == 0
-    assert mepc.fields is None
+    assert mepc.fields is not None
+    assert "value" in mepc.fields
+    assert mepc.fields["value"].bits == (63, 0)
 
 
 def test_load_all_csrs_returns_dict():

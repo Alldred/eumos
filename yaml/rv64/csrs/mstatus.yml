@@ -10,12 +10,24 @@ width: 64
 extension: "Zicsr"
 reset_value: 0
 fields:
+  - name: reserved
+    bits: [2, 0]
+    description: Unused
   - name: MIE
     bits: 3
     description: Machine interrupt enable
+  - name: reserved1
+    bits: [6, 4]
+    description: Unused
   - name: MPIE
     bits: 7
     description: Machine previous interrupt enable
+  - name: reserved2
+    bits: [10, 8]
+    description: Unused
   - name: MPP
     bits: [12, 11]
     description: Machine previous privilege mode (2 bits)
+  - name: reserved3
+    bits: [63, 13]
+    description: Unused
