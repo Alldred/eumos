@@ -12,7 +12,8 @@ from validation import load_yaml, validate_yaml_schema
 def load_format(format_dir, format_name):
     """Load and validate one format (e.g. I, R, S, B) from format_dir; returns FormatDef."""
     path = os.path.join(format_dir, format_name + ".yml")
-    schema_path = os.path.join(os.path.dirname(__file__), "format_schema.yaml")
+    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    schema_path = os.path.join(root, "yaml", "schemas", "format_schema.yaml")
     validate_yaml_schema(path, schema_path)
     if not os.path.exists(path):
         raise FileNotFoundError(f"Format file not found: {path}")

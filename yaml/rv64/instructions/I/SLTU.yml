@@ -1,0 +1,15 @@
+name: SLTU
+mnemonic: sltu
+format: R
+fixed_values:
+  opcode: 0x33
+  funct3: 0x3
+  funct7: 0x00
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "I"
+description: |
+  SLTU sets rd to 1 if rs1 is less than rs2 (unsigned), otherwise sets rd to 0.
+  rd = (rs1 < rs2) ? 1 : 0

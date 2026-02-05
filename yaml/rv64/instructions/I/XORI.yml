@@ -1,0 +1,14 @@
+name: XORI
+mnemonic: xori
+format: I
+fixed_values:
+  opcode: 0x13
+  funct3: 0x4
+inputs:
+  - rd
+  - rs1
+  - imm
+extension: "I"
+description: |
+  XORI performs a bitwise XOR of rs1 and the sign-extended immediate and stores the result in rd.
+  rd = rs1 ^ imm

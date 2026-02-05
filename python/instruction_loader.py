@@ -23,9 +23,16 @@ from models import (
 from validation import load_yaml, validate_yaml_schema
 
 
+def _project_root():
+    """Project root (parent of python/)."""
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
 def load_instruction(instr_path, format_dir):
     """Load and validate one instruction YAML; resolves format from format_dir; returns InstructionDef."""
-    schema_path = os.path.join(os.path.dirname(__file__), "instruction_schema.yaml")
+    schema_path = os.path.join(
+        _project_root(), "yaml", "schemas", "instruction_schema.yaml"
+    )
     validate_yaml_schema(instr_path, schema_path)
     data = load_yaml(instr_path)
     fmt = load_format(format_dir, data["format"])

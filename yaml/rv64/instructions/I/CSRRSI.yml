@@ -1,0 +1,13 @@
+name: CSRRSI
+mnemonic: csrrsi
+format: I
+fixed_values:
+  opcode: 0x73
+  funct3: 0x6
+inputs:
+  - rd
+  - imm
+extension: "I"
+description: |
+  CSRRSI atomically reads and sets bits in the CSR using a zero-extended immediate.
+  t = CSR[imm[11:0]]; CSR[imm[11:0]] = t | zimm; rd = t
