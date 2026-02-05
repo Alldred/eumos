@@ -8,3 +8,4 @@ privilege: machine
 access: read-write
 width: 64
 extension: "Zicsr"
+reset_value: 0

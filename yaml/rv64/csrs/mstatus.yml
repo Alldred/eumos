@@ -8,3 +8,14 @@ privilege: machine
 access: read-write
 width: 64
 extension: "Zicsr"
+reset_value: 0
+fields:
+  - name: MIE
+    bits: 3
+    description: Machine interrupt enable
+  - name: MPIE
+    bits: 7
+    description: Machine previous interrupt enable
+  - name: MPP
+    bits: [12, 11]
+    description: Machine previous privilege mode (2 bits)

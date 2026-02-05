@@ -10,3 +10,15 @@ mapping:
   access: {type: str, required: false}
   width: {type: int, required: false}
   extension: {type: str, required: false}
+  reset_value: {type: int, required: false}
+  fields:
+    type: seq
+    required: false
+    sequence:
+      - type: map
+        mapping:
+          name: {type: str, required: true}
+          bits: {type: any, required: true}
+          description: {type: str, required: false}
+          reset_value: {type: int, required: false}
+          access: {type: str, required: false}
