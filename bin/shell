@@ -1,6 +1,6 @@
 #!/bin/zsh
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Noodle-Bytes. All Rights Reserved
+# Copyright (c) 2025 Stuart Alldred. All Rights Reserved
 
 # Check for SLATE_ROOT already being set in the shell
 if [[ "$SLATE_ROOT" != "" ]]; then

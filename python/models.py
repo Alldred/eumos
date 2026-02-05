@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Noodle-Bytes. All Rights Reserved
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
 """Data structures for RISC-V instruction and format specs (ISA only; no file I/O)."""
 
