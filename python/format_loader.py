@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Noodle-Bytes. All Rights Reserved
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
 """Load format YAML (R, I, S, B, etc.) into FormatDef."""
 

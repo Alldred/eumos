@@ -1,6 +1,6 @@
 <!--
   ~ SPDX-License-Identifier: MIT
-  ~ Copyright (c) 2025 Noodle-Bytes. All Rights Reserved
+  ~ Copyright (c) 2025-2026 Stuart Alldred. All Rights Reserved
   -->
 
 # Contributor Covenant Code of Conduct

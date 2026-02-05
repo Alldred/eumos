@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Noodle-Bytes. All Rights Reserved
+# Copyright (c) 2025 Stuart Alldred. All Rights Reserved
 
 # Jump to SLATE_ROOT
 cd $SLATE_ROOT
