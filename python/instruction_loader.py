@@ -64,9 +64,9 @@ def load_format(format_dir, format_name):
     # Schema is in yaml/schemas/ relative to project root
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     schema_path = os.path.join(project_root, 'yaml', 'schemas', 'format_schema.yaml')
-    validate_yaml_schema(path, schema_path)
     if not os.path.exists(path):
         raise FileNotFoundError(f"Format file not found: {path}")
+    validate_yaml_schema(path, schema_path)
     data = load_yaml(path)
     fields = []
     for fld in data.get("fields", []):
