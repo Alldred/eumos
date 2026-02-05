@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+"""Tests for csr_loader.load_csr and load_all_csrs."""
+
+from pathlib import Path
+
+import csr_loader
+import models
+
+
+def _paths():
+    repo = Path(__file__).resolve().parent.parent
+    return {
+        "csr_root": repo / "yaml" / "rv64" / "csrs",
+        "mstatus_yml": repo / "yaml" / "rv64" / "csrs" / "mstatus.yml",
+    }
+
+
+def test_load_csr_mstatus():
+    p = _paths()
+    csr = csr_loader.load_csr(str(p["mstatus_yml"]))
+    assert isinstance(csr, models.CSRDef)
+    assert csr.name == "mstatus"
+    assert csr.address == 0x300
+    assert "status" in csr.description.lower()
+    assert csr.privilege == "machine"
+    assert csr.access == "read-write"
+    assert csr.width == 64
+    assert csr.extension == "Zicsr"
+
+
+def test_load_all_csrs_returns_dict():
+    p = _paths()
+    csrs = csr_loader.load_all_csrs(str(p["csr_root"]))
+    assert isinstance(csrs, dict)
+    assert "mstatus" in csrs
+    assert "mepc" in csrs
+    assert "mcause" in csrs
+    assert "mtvec" in csrs
+    assert csrs["mstatus"].address == 0x300
+    assert csrs["mepc"].address == 0x341
+    assert csrs["mcause"].address == 0x342
+    assert len(csrs) == 12

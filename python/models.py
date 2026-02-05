@@ -71,3 +71,17 @@ class InstructionDef:
     fields: Dict[str, FieldEncoding] = field(default_factory=dict)
     extension: str = ""
     source_file: Optional[str] = None
+
+
+@dataclass
+class CSRDef:
+    """ISA definition for one control and status register: name, address, and optional metadata."""
+
+    name: str
+    address: int
+    description: str = ""
+    privilege: Optional[str] = None
+    access: Optional[str] = None
+    width: Optional[int] = None
+    extension: Optional[str] = None
+    source_file: Optional[str] = None

@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: mstatus
+address: 0x300
+description: Machine status register; global interrupt enable, privilege, etc.
+privilege: machine
+access: read-write
+width: 64
+extension: "Zicsr"

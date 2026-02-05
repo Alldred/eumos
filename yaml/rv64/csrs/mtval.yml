@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: mtval
+address: 0x343
+description: Machine trap value; faulting address or instruction.
+privilege: machine
+access: read-write
+width: 64
+extension: "Zicsr"

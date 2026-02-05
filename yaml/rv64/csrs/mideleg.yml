@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: mideleg
+address: 0x303
+description: Machine interrupt delegation; which interrupts trap to S-mode.
+privilege: machine
+access: read-write
+width: 64
+extension: "Zicsr"

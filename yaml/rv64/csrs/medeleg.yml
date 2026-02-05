@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: medeleg
+address: 0x302
+description: Machine exception delegation; which exceptions trap to S-mode.
+privilege: machine
+access: read-write
+width: 64
+extension: "Zicsr"

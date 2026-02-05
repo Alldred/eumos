@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: mie
+address: 0x304
+description: Machine interrupt-enable register.
+privilege: machine
+access: read-write
+width: 64
+extension: "Zicsr"
