@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Noodle-Bytes. All Rights Reserved
+# Copyright (c) 2026 Noodle-Bytes. All Rights Reserved
+
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2025 Stuart Alldred. All Rights Reserved
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks

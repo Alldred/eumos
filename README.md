@@ -3,6 +3,11 @@
   ~ Copyright (c) 2026 Noodle-Bytes. All Rights Reserved
   -->
 
+<!--
+  ~ SPDX-License-Identifier: MIT
+  ~ Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+  -->
+
 Slate is a python-based machine readable specification for RISCV.
 
 Will be very basic/limited to begin with, but will be adding more extensions and information over time.
@@ -33,3 +38,4 @@ uv run pytest
 - Each **InstructionDef** has: `name`, `mnemonic`, `format` (a **FormatDef**), `operands` (name -> **Operand**), `fields` (name -> **FieldEncoding**), `inputs` (ordered list), `fixed_values` (opcode, funct3, funct7), `imm`, `description`, and `extension`.
 - **FormatDef** has `asm_format` (e.g. `"{mnemonic} {rd}, {rs1}, {imm}"`) and `fields` (list of **FieldDef**). Encoding bit ranges come from `fields`; for split immediates (S/B type), use `parts[].bits` and `parts[].operand_bits`.
 - For user data (concrete operand values, register names/values), use **InstructionInstance** and **RegisterContext** from `instance`; `get_operand_info(name)` returns **OperandInfo**, which combines ISA and user data per operand.
+- **Decoder**: use **decoder.Decoder** or **decoder.decode(word)** to decode a 32-bit instruction word into an **InstructionInstance** with `instruction` and `operand_values` filled from the encoding (rd, rs1, rs2, imm, etc.). Without a **RegisterContext**, GPR values and resolved names are not populated; only what can be decoded from the bits is set.

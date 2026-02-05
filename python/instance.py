@@ -1,12 +1,57 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Noodle-Bytes. All Rights Reserved
 
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
 """User data layered on ISA: instruction instances, register context, and operand-level combined view."""
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterator, Optional
+from typing import Any, Dict, Iterator, Optional, Union
 
 from models import FieldEncoding, InstructionDef, Operand
+
+# RISC-V GPR ABI names (x0..x31). s0/fp is canonical as s0.
+_GPR_ABI_NAMES = (
+    "zero",
+    "ra",
+    "sp",
+    "gp",
+    "tp",
+    "t0",
+    "t1",
+    "t2",
+    "s0",
+    "s1",
+    "a0",
+    "a1",
+    "a2",
+    "a3",
+    "a4",
+    "a5",
+    "a6",
+    "a7",
+    "s2",
+    "s3",
+    "s4",
+    "s5",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s10",
+    "s11",
+    "t3",
+    "t4",
+    "t5",
+    "t6",
+)
+_GPR_NAME_TO_INDEX: Dict[str, int] = {}
+for _i, _n in enumerate(_GPR_ABI_NAMES):
+    _GPR_NAME_TO_INDEX[_n] = _i
+for _i in range(32):
+    _GPR_NAME_TO_INDEX[f"x{_i}"] = _i
+_GPR_NAME_TO_INDEX["fp"] = 8  # s0/fp
 
 
 @dataclass
@@ -23,16 +68,33 @@ class OperandInfo:
     resolved_value: Optional[Any] = None
 
 
+def _reg_to_index(reg: Union[int, str]) -> Optional[int]:
+    """Resolve register to GPR index (0..31). Accepts int index or RISC-V name (e.g. 'ra', 'x1')."""
+    if isinstance(reg, int):
+        if 0 <= reg <= 31:
+            return reg
+        return None
+    idx = _GPR_NAME_TO_INDEX.get(reg.lower() if isinstance(reg, str) else reg)
+    return idx
+
+
 class RegisterContext:
-    """Maps register index to user-defined name and/or value (e.g. 1 -> 'gp1', 0x1234)."""
+    """Maps GPR index (0..31) to RISC-V GPR name and optional value. Use index or name when setting."""
 
     def __init__(self) -> None:
         self._entries: Dict[int, Dict[str, Any]] = {}
 
     def set(
-        self, reg_index: int, *, name: Optional[str] = None, value: Optional[Any] = None
+        self,
+        reg: Union[int, str],
+        *,
+        name: Optional[str] = None,
+        value: Optional[Any] = None,
     ) -> None:
-        """Set name and/or value for a register index."""
+        """Set name and/or value for a register. reg is GPR index (0..31) or RISC-V name (e.g. 'ra', 'x1')."""
+        reg_index = _reg_to_index(reg)
+        if reg_index is None:
+            return
         if reg_index not in self._entries:
             self._entries[reg_index] = {}
         if name is not None:
@@ -41,11 +103,13 @@ class RegisterContext:
             self._entries[reg_index]["value"] = value
 
     def get_name(self, reg_index: int) -> Optional[str]:
-        """Return the user-defined name for a register index, or None."""
-        return self._entries.get(reg_index, {}).get("name")
+        """Return the name for a register index: user-set name if any, else RISC-V ABI name (e.g. 'ra')."""
+        if not 0 <= reg_index <= 31:
+            return None
+        return self._entries.get(reg_index, {}).get("name") or _GPR_ABI_NAMES[reg_index]
 
     def get_value(self, reg_index: int) -> Optional[Any]:
-        """Return the user-defined value for a register index, or None."""
+        """Return the user-set value for a register index, or None."""
         return self._entries.get(reg_index, {}).get("value")
 
 
