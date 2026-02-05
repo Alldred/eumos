@@ -1,0 +1,15 @@
+name: AND
+mnemonic: and
+format: R
+fixed_values:
+  opcode: 0x33
+  funct3: 0x7
+  funct7: 0x00
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "I"
+description: |
+  AND performs a bitwise AND of rs1 and rs2 and stores the result in rd.
+  rd = rs1 & rs2

@@ -50,6 +50,10 @@ class InstructionDef:
     operands: Dict[str, Operand] = field(default_factory=dict)
     fields: Dict[str, FieldEncoding] = field(default_factory=dict)
 
+def get_project_root():
+    """Get the project root directory (parent of python/ directory)."""
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 def validate_yaml_schema(yaml_path, schema_path):
     core = Core(source_file=yaml_path, schema_files=[schema_path])
     core.validate()
@@ -61,10 +65,11 @@ def load_yaml(filepath):
 
 def load_format(format_dir, format_name):
     path = os.path.join(format_dir, format_name + '.yml')
-    schema_path = os.path.join(os.path.dirname(__file__), 'format_schema.yaml')
-    validate_yaml_schema(path, schema_path)
+    # Schema is in yaml/schemas/ relative to project root
+    schema_path = os.path.join(get_project_root(), 'yaml', 'schemas', 'format_schema.yaml')
     if not os.path.exists(path):
         raise FileNotFoundError(f"Format file not found: {path}")
+    validate_yaml_schema(path, schema_path)
     data = load_yaml(path)
     fields = []
     for fld in data.get("fields", []):
@@ -83,7 +88,8 @@ def load_format(format_dir, format_name):
     )
 
 def load_instruction(instr_path, format_dir):
-    schema_path = os.path.join(os.path.dirname(__file__), 'instruction_schema.yaml')
+    # Schema is in yaml/schemas/ relative to project root
+    schema_path = os.path.join(get_project_root(), 'yaml', 'schemas', 'instruction_schema.yaml')
     validate_yaml_schema(instr_path, schema_path)
     data = load_yaml(instr_path)
     fmt = load_format(format_dir, data["format"])

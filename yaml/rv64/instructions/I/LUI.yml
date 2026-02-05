@@ -1,0 +1,12 @@
+name: LUI
+mnemonic: lui
+format: U
+fixed_values:
+  opcode: 0x37
+inputs:
+  - rd
+  - imm
+extension: "I"
+description: |
+  LUI loads the upper 20 bits of the immediate into rd, setting the lower 12 bits to zero.
+  rd = imm << 12

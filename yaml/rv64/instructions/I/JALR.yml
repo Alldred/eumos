@@ -1,0 +1,14 @@
+name: JALR
+mnemonic: jalr
+format: I
+fixed_values:
+  opcode: 0x67
+  funct3: 0x0
+inputs:
+  - rd
+  - rs1
+  - imm
+extension: "I"
+description: |
+  JALR jumps to the address computed by rs1 plus the immediate, and stores the address of the next instruction in rd.
+  rd = pc + 4; pc = (rs1 + imm) & ~1

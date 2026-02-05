@@ -1,0 +1,15 @@
+name: SLLW
+mnemonic: sllw
+format: R
+fixed_values:
+  opcode: 0x3B
+  funct3: 0x1
+  funct7: 0x00
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "I"
+description: |
+  SLLW performs a logical left shift of the lower 32 bits of rs1 by the amount in rs2[4:0], sign-extends the result, and stores it in rd.
+  rd = sign_extend((rs1[31:0] << rs2[4:0])[31:0])

@@ -1,0 +1,14 @@
+name: BNE
+mnemonic: bne
+format: B
+fixed_values:
+  opcode: 0x63
+  funct3: 0x1
+inputs:
+  - rs1
+  - rs2
+  - imm
+extension: "I"
+description: |
+  BNE branches to the target address if rs1 and rs2 are not equal.
+  if (rs1 != rs2) pc += imm
