@@ -1,7 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Noodle-Bytes. All Rights Reserved
-
-# SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
 """Tests for decoder.Decoder and decode()."""
