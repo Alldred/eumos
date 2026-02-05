@@ -64,7 +64,7 @@ def test_load_all_instructions_returns_dict():
         str(p["instr_root"]), str(p["format_dir"])
     )
     assert isinstance(instrs, dict)
-    assert len(instrs) == 18
+    assert len(instrs) == 60
     assert "addi" in instrs
     assert "sd" in instrs
     assert "beq" in instrs
