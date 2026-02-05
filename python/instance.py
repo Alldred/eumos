@@ -7,7 +7,7 @@
 """User data layered on ISA: instruction instances, register context, and operand-level combined view."""
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, Iterator, Optional, Union
+from typing import Any, Dict, Iterable, Iterator, Optional, Tuple, Union
 
 from models import CSRDef, FieldEncoding, InstructionDef, Operand
 
@@ -189,7 +189,7 @@ class ISA:
         self,
         instruction_instance: "InstructionInstance",
         csr_context: Optional[CSRContext] = None,
-    ) -> tuple[Optional[CSRDef], Optional[Any]]:
+    ) -> Tuple[Optional[CSRDef], Optional[Any]]:
         """Resolve the CSR for a CSR instruction (using imm operand) to CSRDef and optional value from context."""
         if self.csrs_by_address is None:
             return None, None
