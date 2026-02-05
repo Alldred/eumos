@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+type: seq
+sequence:
+  - type: map
+    mapping:
+      index: {type: int, required: true}
+      abi_name: {type: str, required: true}
+      reset_value: {type: int, required: true}
+      access: {type: str, required: true}

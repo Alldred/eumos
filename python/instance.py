@@ -9,7 +9,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, Iterator, Optional, Tuple, Union
 
-from models import CSRDef, FieldEncoding, InstructionDef, Operand
+from models import CSRDef, FieldEncoding, GPRDef, InstructionDef, Operand
 
 # RISC-V GPR ABI names (x0..x31). s0/fp is canonical as s0.
 _GPR_ABI_NAMES = (
@@ -53,6 +53,24 @@ for _i in range(32):
     _GPR_NAME_TO_INDEX[f"x{_i}"] = _i
 _GPR_NAME_TO_INDEX["fp"] = 8  # s0/fp
 
+# Lazy-loaded GPR definitions (index -> GPRDef) for reset_value and access lookup.
+_GPR_DEFS: Optional[Dict[int, GPRDef]] = None
+
+
+def get_gpr_def(reg_index: int) -> Optional[GPRDef]:
+    """Return GPR definition for index 0..31 (reset value, access), or None. Loads GPR YAML on first use."""
+    global _GPR_DEFS
+    if _GPR_DEFS is None:
+        try:
+            import gpr_loader
+
+            _GPR_DEFS = gpr_loader.load_gprs()
+        except Exception:
+            _GPR_DEFS = {}
+    if not (0 <= reg_index <= 31):
+        return None
+    return _GPR_DEFS.get(reg_index)
+
 
 @dataclass
 class OperandInfo:
@@ -81,8 +99,17 @@ def _reg_to_index(reg: Union[int, str]) -> Optional[int]:
 class RegisterContext:
     """Maps GPR index (0..31) to RISC-V GPR name and optional value. Use index or name when setting."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        gpr_defs: Optional[Union[Dict[int, GPRDef], Iterable[GPRDef]]] = None,
+    ) -> None:
         self._entries: Dict[int, Dict[str, Any]] = {}
+        self._gpr_defs: Optional[Dict[int, GPRDef]] = None
+        if gpr_defs is not None:
+            if isinstance(gpr_defs, dict):
+                self._gpr_defs = gpr_defs
+            else:
+                self._gpr_defs = {g.index: g for g in gpr_defs}
 
     def set(
         self,
@@ -111,6 +138,26 @@ class RegisterContext:
     def get_value(self, reg_index: int) -> Optional[Any]:
         """Return the user-set value for a register index, or None."""
         return self._entries.get(reg_index, {}).get("value")
+
+    def get_reset_value(self, reg_index: int) -> Optional[int]:
+        """Return the reset value for a register index from GPR spec, or None."""
+        if not 0 <= reg_index <= 31:
+            return None
+        if self._gpr_defs is not None:
+            g = self._gpr_defs.get(reg_index)
+            return g.reset_value if g else None
+        g = get_gpr_def(reg_index)
+        return g.reset_value if g else None
+
+    def get_access(self, reg_index: int) -> Optional[str]:
+        """Return the access (e.g. read-only, read-write) for a register index from GPR spec, or None."""
+        if not 0 <= reg_index <= 31:
+            return None
+        if self._gpr_defs is not None:
+            g = self._gpr_defs.get(reg_index)
+            return g.access if g else None
+        g = get_gpr_def(reg_index)
+        return g.access if g else None
 
 
 def _csr_key_to_address(

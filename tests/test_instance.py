@@ -6,7 +6,7 @@
 from pathlib import Path
 
 import instruction_loader
-from instance import InstructionInstance, OperandInfo, RegisterContext
+from instance import InstructionInstance, OperandInfo, RegisterContext, get_gpr_def
 
 
 def _paths():
@@ -123,3 +123,28 @@ def test_instruction_only_isa_uses_instruction_def_operands():
     assert "rs1" in instr.operands
     assert instr.operands["rs1"].type == "register"
     assert instr.operands["rs1"].size == 5
+
+
+def test_get_gpr_def_returns_reset_and_access():
+    """get_gpr_def returns GPRDef with reset_value and access from GPR YAML."""
+    g0 = get_gpr_def(0)
+    assert g0 is not None
+    assert g0.index == 0
+    assert g0.abi_name == "zero"
+    assert g0.reset_value == 0
+    assert g0.access == "read-only"
+    g1 = get_gpr_def(1)
+    assert g1 is not None
+    assert g1.access == "read-write"
+    assert get_gpr_def(32) is None
+
+
+def test_register_context_get_reset_value_and_access():
+    """RegisterContext.get_reset_value and get_access use GPR spec when available."""
+    regs = RegisterContext()
+    assert regs.get_reset_value(0) == 0
+    assert regs.get_access(0) == "read-only"
+    assert regs.get_reset_value(1) == 0
+    assert regs.get_access(1) == "read-write"
+    assert regs.get_reset_value(32) is None
+    assert regs.get_access(32) is None

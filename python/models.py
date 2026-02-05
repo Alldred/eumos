@@ -4,7 +4,7 @@
 """Data structures for RISC-V instruction and format specs (ISA only; no file I/O)."""
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 
 @dataclass
@@ -74,6 +74,28 @@ class InstructionDef:
 
 
 @dataclass
+class GPRDef:
+    """ISA definition for one general-purpose register: index, ABI name, reset value, and access."""
+
+    index: int
+    abi_name: str
+    reset_value: int
+    access: str
+    source_file: Optional[str] = None
+
+
+@dataclass
+class CSRFieldDef:
+    """One named field within a CSR: bit range, optional description, reset value, and access override."""
+
+    name: str
+    bits: Union[int, Tuple[int, int]]  # single bit or (high, low) inclusive
+    description: str = ""
+    reset_value: Optional[int] = None
+    access: Optional[str] = None  # overrides CSR-level access when set
+
+
+@dataclass
 class CSRDef:
     """ISA definition for one control and status register: name, address, and optional metadata."""
 
@@ -84,4 +106,6 @@ class CSRDef:
     access: Optional[str] = None
     width: Optional[int] = None
     extension: Optional[str] = None
+    reset_value: Optional[int] = None
+    fields: Optional[Dict[str, CSRFieldDef]] = None
     source_file: Optional[str] = None

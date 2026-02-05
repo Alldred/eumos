@@ -28,6 +28,31 @@ def test_load_csr_mstatus():
     assert csr.access == "read-write"
     assert csr.width == 64
     assert csr.extension == "Zicsr"
+    assert csr.reset_value == 0
+
+
+def test_load_csr_mstatus_has_fields():
+    p = _paths()
+    csr = csr_loader.load_csr(str(p["mstatus_yml"]))
+    assert csr.fields is not None
+    assert "MIE" in csr.fields
+    assert "MPIE" in csr.fields
+    assert "MPP" in csr.fields
+    mie = csr.fields["MIE"]
+    assert isinstance(mie, models.CSRFieldDef)
+    assert mie.name == "MIE"
+    assert mie.bits == 3
+    assert mie.access is None  # uses CSR default
+    mpp = csr.fields["MPP"]
+    assert mpp.bits == (12, 11)
+
+
+def test_load_csr_mepc_has_reset_value_no_fields():
+    p = _paths()
+    csrs = csr_loader.load_all_csrs(str(p["csr_root"]))
+    mepc = csrs["mepc"]
+    assert mepc.reset_value == 0
+    assert mepc.fields is None
 
 
 def test_load_all_csrs_returns_dict():
