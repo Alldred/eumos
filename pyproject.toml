@@ -34,3 +34,4 @@ exclude_lines = [
 
 [tool.setuptools]
 include-package-data = true
+packages = ["blackrock"]
