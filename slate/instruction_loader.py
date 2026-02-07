@@ -37,42 +37,38 @@ def load_instruction(instr_path, format_dir):
     data = load_yaml(instr_path)
     fmt = load_format(format_dir, data["format"])
     fixed_keys = ["opcode", "funct3", "funct7"]
-    fixed_values = {}
-    if "fixed_values" in data:
-        fixed_values = {
-            k: data["fixed_values"][k] for k in fixed_keys if k in data["fixed_values"]
-        }
+    fixed_values = {
+        k: data["fixed_values"][k]
+        for k in fixed_keys
+        if "fixed_values" in data and k in data["fixed_values"]
+    }
+
     operands = {}
     fields = {}
     for field in fmt.fields:
+        size = 1
         if hasattr(field, "parts") and field.parts:
-            total_bits = 0
-            for part in field.parts:
-                bits = part.bits
-                if len(bits) == 2:
-                    msb, lsb = bits
-                    total_bits += abs(msb - lsb) + 1
-                else:
-                    total_bits += 1
+            size = sum(
+                abs(part.bits[0] - part.bits[1]) + 1 if len(part.bits) == 2 else 1
+                for part in field.parts
+            )
             operands[field.name] = Operand(
                 name=field.name,
                 type=field.type,
-                size=total_bits,
+                size=size,
                 data=fixed_values.get(field.name),
             )
             fields[field.name] = FieldEncoding(
                 name=field.name, type=field.type, parts=field.parts
             )
         else:
-            bits = field.bits
-            if len(bits) == 2:
-                msb, lsb = bits
-                size = abs(msb - lsb) + 1
-            else:
-                size = 1
-            data_val = fixed_values.get(field.name)
+            if len(field.bits) == 2:
+                size = abs(field.bits[0] - field.bits[1]) + 1
             operands[field.name] = Operand(
-                name=field.name, type=field.type, size=size, data=data_val
+                name=field.name,
+                type=field.type,
+                size=size,
+                data=fixed_values.get(field.name),
             )
             fields[field.name] = FieldEncoding(
                 name=field.name, type=field.type, bits=field.bits
@@ -93,34 +89,14 @@ def load_instruction(instr_path, format_dir):
 
 
 def load_all_instructions(
-    instr_root=None,
-    format_dir=None,
+    instr_root="arch/rv64/instructions", format_dir="arch/rv64/formats"
 ):
     """Walk instr_root for .yml/.yaml instruction files and load each; returns dict mnemonic -> InstructionDef."""
-    if instr_root is None:
-        instr_root = "arch/rv64/instructions"
-    if format_dir is None:
-        format_dir = "arch/rv64/formats"
     instructions = {}
     for root, _, files in os.walk(instr_root):
         for file in files:
-            if file.endswith(".yml") or file.endswith(".yaml"):
+            if file.endswith((".yml", ".yaml")):
                 instr_path = os.path.join(root, file)
                 instr = load_instruction(instr_path, format_dir)
                 instructions[instr.mnemonic] = instr
     return instructions
-
-
-if __name__ == "__main__":
-    instrs = load_all_instructions()
-    if instrs:
-        first_instr = instrs["sd"]
-        for k, v in first_instr.__dict__.items():
-            if isinstance(v, dict):
-                print(f"{k}:")
-                for key, item in v.items():
-                    print(f"  {key}: {item}")
-            else:
-                print(f"{k}: {v}")
-    else:
-        print("No instructions found.")

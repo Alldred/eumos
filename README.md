@@ -15,17 +15,41 @@ Start from the project shell so the environment is set up:
 ./bin/shell
 ```
 
-Then install dependencies (including dev tools like pytest) with uv and run the loader or tests:
+Then install dependencies (including dev tools like pytest) with uv:
 
 ```bash
 uv sync --extra dev
-python3 python/instruction_loader.py
+```
+
+### Example usage
+
+To see how to use the instruction loader, run the example script:
+
+```bash
+python3 example/instruction_loader_example.py
+```
+
+This will load instructions from the YAML files and print a summary.
+
+### Tests
+
+Run all tests:
+
+```bash
 uv run pytest
 ```
 
-- **Loader**: `python3 python/instruction_loader.py` prints a sample instruction (SD).
-- **Tests**: `uv run pytest` runs all tests. Use `uv run pytest -v` for verbose, or `uv run pytest tests/test_instance.py` to run a single file.
-- **Coverage**: `uv run pytest --cov=python --cov-report=term-missing` runs tests with code coverage and shows which lines are not covered. Add `--cov-report=html` to generate an HTML report in `htmlcov/`.
+Use `uv run pytest -v` for verbose, or `uv run pytest tests/test_instance.py` to run a single file.
+
+### Coverage
+
+Run tests with code coverage:
+
+```bash
+uv run pytest --cov=slate --cov-report=term-missing
+```
+
+Add `--cov-report=html` to generate an HTML report in `htmlcov/`.
 
 ## Data model
 
