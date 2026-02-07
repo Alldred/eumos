@@ -5,12 +5,11 @@
 
 from pathlib import Path
 
-import format_loader
-import models
+from slate import format_loader, models
 
 
 def _format_dir():
-    return Path(__file__).resolve().parent.parent / "yaml" / "rv64" / "formats"
+    return Path(__file__).resolve().parent.parent / "arch" / "rv64" / "formats"
 
 
 def test_load_format_i_returns_format_def():

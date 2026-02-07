@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: J
+fullname: Jump Type
+asm_format: "{mnemonic} {rd}, {imm}"
+fields:
+  - name: imm
+    type: immediate
+    parts:
+      - bits: [31,31]
+        operand_bits: [20,20]
+      - bits: [19,12]
+        operand_bits: [19,12]
+      - bits: [20,20]
+        operand_bits: [11,11]
+      - bits: [30,21]
+        operand_bits: [10,1]
+  - name: rd
+    bits: [11,7]
+    type: register
+  - name: opcode
+    bits: [6,0]
+    type: opcode
+description: J-type format for jump operations (JAL).

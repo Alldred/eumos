@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Test outputs
+htmlcov/
+
+# Environment
+.venv/
+
+# Pre-commit cache
+.cache/
+
+# Lock files
+uv.lock
+
+# Misc
+*.swp
+*.swo
+
+# Slate
+bin/zsh/
+
+# Ignore YAML backups
+*.bak
+
+# Ignore temporary files
+*.tmp
+
+# Ignore logs
+*.log
+
+# Ignore coverage
+.coverage
+
+# Ignore shell history
+.zsh_history
+
+# Ignore patch files
+*.patch
+
+# Ignore git error logs
+git-error-*

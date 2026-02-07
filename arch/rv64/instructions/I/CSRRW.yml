@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: CSRRW
+mnemonic: csrrw
+format: I
+fixed_values:
+  opcode: 0x73
+  funct3: 0x1
+inputs:
+  - rd
+  - rs1
+  - imm
+extension: "I"
+description: |
+  CSRRW atomically swaps values in the CSR and integer register.
+  t = CSR[imm]; CSR[imm] = rs1; rd = t

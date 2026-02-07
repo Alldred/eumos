@@ -10,7 +10,7 @@ dependencies = [
     "PyYAML",
 ]
 authors = [
-    "Stuart Alldred <stuartalldred@gmail.com>",
+    { name = "Stuart Alldred", email = "stuartalldred@gmail.com" }
 ]
 requires-python = ">= 3.13"
 
@@ -18,11 +18,11 @@ requires-python = ">= 3.13"
 dev = ["pytest", "pytest-cov"]
 
 [tool.pytest.ini_options]
-pythonpath = ["python"]
+pythonpath = ["slate"]
 testpaths = ["tests"]
 
 [tool.coverage.run]
-source = ["python"]
+source = ["slate"]
 
 [tool.coverage.report]
 exclude_lines = [

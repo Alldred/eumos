@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: SH
+mnemonic: sh
+format: S
+fixed_values:
+  opcode: 0x23
+  funct3: 0x1
+inputs:
+  - rs2
+  - rs1
+  - imm
+extension: "I"
+description: |
+  SH stores the least significant halfword in rs2 to the memory address computed by rs1 plus the immediate.
+  MEM[rs1 + imm] = rs2[15:0]

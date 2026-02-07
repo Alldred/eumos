@@ -5,16 +5,22 @@
 
 from pathlib import Path
 
-import instruction_loader
-from decoder import Decoder, decode
-from instance import InstructionInstance, RegisterContext
+from slate import instruction_loader
+from slate.decoder import Decoder, decode
+from slate.instance import InstructionInstance, RegisterContext
 
 
 def _paths():
     repo = Path(__file__).resolve().parent.parent
     return {
-        "format_dir": repo / "yaml" / "rv64" / "formats",
-        "instr_root": repo / "yaml" / "rv64" / "instructions",
+        "format_dir": repo / "arch" / "rv64" / "formats",
+        "instr_root": repo / "arch" / "rv64" / "instructions",
+        "csr_root": repo / "arch" / "rv64" / "csrs",
+        "mstatus_yml": repo / "arch" / "rv64" / "csrs" / "mstatus.yml",
+        "addi_yml": repo / "arch" / "rv64" / "instructions" / "I" / "ADDI.yml",
+        "sd_yml": repo / "arch" / "rv64" / "instructions" / "I" / "SD.yml",
+        "ecall_yml": repo / "arch" / "rv64" / "instructions" / "I" / "ECALL.yml",
+        "gprs_yml": repo / "arch" / "rv64" / "gprs.yml",
     }
 
 

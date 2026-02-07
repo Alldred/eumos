@@ -5,15 +5,14 @@
 
 from pathlib import Path
 
-import csr_loader
-import models
+from slate import csr_loader, models
 
 
 def _paths():
     repo = Path(__file__).resolve().parent.parent
     return {
-        "csr_root": repo / "yaml" / "rv64" / "csrs",
-        "mstatus_yml": repo / "yaml" / "rv64" / "csrs" / "mstatus.yml",
+        "csr_root": repo / "arch" / "rv64" / "csrs",
+        "mstatus_yml": repo / "arch" / "rv64" / "csrs" / "mstatus.yml",
     }
 
 

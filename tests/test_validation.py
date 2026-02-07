@@ -7,7 +7,8 @@ import tempfile
 from pathlib import Path
 
 import pytest
-import validation
+
+from slate import validation
 
 
 def test_load_yaml_returns_expected_dict():
@@ -31,8 +32,8 @@ def test_validate_yaml_schema_valid_instruction_does_not_raise():
 
 def test_validate_yaml_schema_valid_format_does_not_raise():
     repo_root = Path(__file__).resolve().parent.parent
-    format_path = repo_root / "yaml" / "rv64" / "formats" / "I.yml"
-    schema_path = repo_root / "yaml" / "schemas" / "format_schema.yaml"
+    format_path = repo_root / "arch" / "rv64" / "formats" / "I.yml"
+    schema_path = repo_root / "arch" / "schemas" / "format_schema.yaml"
     validation.validate_yaml_schema(str(format_path), str(schema_path))
 
 
@@ -41,7 +42,7 @@ def test_validate_yaml_schema_invalid_raises():
         f.write("mnemonic: addi\n")  # missing required name, format, extension
         path = f.name
     repo_root = Path(__file__).resolve().parent.parent
-    schema_path = repo_root / "yaml" / "schemas" / "instruction_schema.yaml"
+    schema_path = repo_root / "arch" / "schemas" / "instruction_schema.yaml"
     try:
         with pytest.raises(Exception):
             validation.validate_yaml_schema(path, str(schema_path))

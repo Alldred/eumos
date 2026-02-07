@@ -5,18 +5,17 @@
 
 from pathlib import Path
 
-import instruction_loader
-import models
+from slate import instruction_loader, models
 
 
 def _paths():
     repo = Path(__file__).resolve().parent.parent
     return {
-        "format_dir": repo / "yaml" / "rv64" / "formats",
-        "instr_root": repo / "yaml" / "rv64" / "instructions",
-        "addi_yml": repo / "yaml" / "rv64" / "instructions" / "I" / "ADDI.yml",
-        "sd_yml": repo / "yaml" / "rv64" / "instructions" / "I" / "SD.yml",
-        "ecall_yml": repo / "yaml" / "rv64" / "instructions" / "I" / "ECALL.yml",
+        "format_dir": repo / "arch" / "rv64" / "formats",
+        "instr_root": repo / "arch" / "rv64" / "instructions",
+        "addi_yml": repo / "arch" / "rv64" / "instructions" / "I" / "ADDI.yml",
+        "sd_yml": repo / "arch" / "rv64" / "instructions" / "I" / "SD.yml",
+        "ecall_yml": repo / "arch" / "rv64" / "instructions" / "I" / "ECALL.yml",
     }
 
 

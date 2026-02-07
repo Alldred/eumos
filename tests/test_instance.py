@@ -5,15 +5,20 @@
 
 from pathlib import Path
 
-import instruction_loader
-from instance import InstructionInstance, OperandInfo, RegisterContext, get_gpr_def
+from slate import instruction_loader
+from slate.instance import (
+    InstructionInstance,
+    OperandInfo,
+    RegisterContext,
+    get_gpr_def,
+)
 
 
 def _paths():
     repo = Path(__file__).resolve().parent.parent
     return {
-        "format_dir": repo / "yaml" / "rv64" / "formats",
-        "addi_yml": repo / "yaml" / "rv64" / "instructions" / "I" / "ADDI.yml",
+        "format_dir": repo / "arch" / "rv64" / "formats",
+        "addi_yml": repo / "arch" / "rv64" / "instructions" / "I" / "ADDI.yml",
     }
 
 

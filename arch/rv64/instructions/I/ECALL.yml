@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: ECALL
+mnemonic: ecall
+format: I
+fixed_values:
+  opcode: 0x73
+  funct3: 0x0
+imm: 0x0
+inputs: []
+extension: "I"
+description: |
+  ECALL is used to make a system call to the execution environment.

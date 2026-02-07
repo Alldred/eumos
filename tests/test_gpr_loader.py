@@ -5,14 +5,13 @@
 
 from pathlib import Path
 
-import gpr_loader
-import models
+from slate import gpr_loader, models
 
 
 def _paths():
     repo = Path(__file__).resolve().parent.parent
     return {
-        "gprs_yml": repo / "yaml" / "rv64" / "gprs.yml",
+        "gprs_yml": repo / "arch" / "rv64" / "gprs.yml",
     }
 
 

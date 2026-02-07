@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: B
+fullname: Branch Type
+asm_format: "{mnemonic} {rs1}, {rs2}, {imm}"
+fields:
+  - name: imm
+    type: immediate
+    parts:
+      - bits: [31,31]
+        operand_bits: [12,12]
+      - bits: [7,7]
+        operand_bits: [11,11]
+      - bits: [30,25]
+        operand_bits: [10,5]
+      - bits: [11,8]
+        operand_bits: [4,1]
+  - name: rs2
+    bits: [24,20]
+    type: register
+  - name: rs1
+    bits: [19,15]
+    type: register
+  - name: funct3
+    bits: [14,12]
+    type: funct
+  - name: opcode
+    bits: [6,0]
+    type: opcode
+description: B-type format for branch operations.

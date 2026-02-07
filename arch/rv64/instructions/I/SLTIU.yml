@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: SLTIU
+mnemonic: sltiu
+format: I
+fixed_values:
+  opcode: 0x13
+  funct3: 0x3
+inputs:
+  - rd
+  - rs1
+  - imm
+extension: "I"
+description: |
+  SLTIU sets rd to 1 if rs1 is less than the sign-extended immediate (unsigned), otherwise sets rd to 0.
+  rd = (rs1 < imm) ? 1 : 0

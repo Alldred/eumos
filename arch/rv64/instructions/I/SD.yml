@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: SD
+mnemonic: sd
+format: S
+fixed_values:
+  opcode: 0x23
+  funct3: 0x3
+inputs:
+  - rs2
+  - rs1
+  - imm
+extension: "I"
+description: |
+  SD stores the value in rs2 to the memory address computed by rs1 plus the immediate.
+  MEM[rs1 + imm] = rs2
