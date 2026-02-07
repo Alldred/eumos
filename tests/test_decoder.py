@@ -5,9 +5,9 @@
 
 from pathlib import Path
 
-from slate import instruction_loader
-from slate.decoder import Decoder, decode
-from slate.instance import InstructionInstance, RegisterContext
+from blackrock import instruction_loader
+from blackrock.decoder import Decoder, decode
+from blackrock.instance import InstructionInstance, RegisterContext
 
 
 def _paths():

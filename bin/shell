@@ -2,19 +2,18 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Stuart Alldred. All Rights Reserved
 
-# Check for SLATE_ROOT already being set in the shell
-if [[ "$SLATE_ROOT" != "" ]]; then
-    echo "[\033[0;31mERROR\033[0m] Slate shell is already activated!"
+# Check for BLACKROCK_ROOT already being set in the shell
+if [[ "$BLACKROCK_ROOT" != "" ]]; then
+    echo "[\033[0;31mERROR\033[0m] Blackrock shell is already activated!"
     exit 1
 fi
 
 # Work out where the repository is located
-SLATE_ROOT=$(readlink -f ${0:a:h}/..)
+BLACKROCK_ROOT=$(readlink -f ${0:a:h}/..)
 
 USER_HISTFILE=${HISTFILE:-$HOME/.zsh_history}
 
-SLATE_ROOT=$SLATE_ROOT \
+BLACKROCK_ROOT=$BLACKROCK_ROOT \
     USER_HISTFILE=$USER_HISTFILE \
-    ZDOTDIR=$SLATE_ROOT/bin/zsh \
+    ZDOTDIR=$BLACKROCK_ROOT/bin/zsh \
     /bin/zsh -i $@
-s

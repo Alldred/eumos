@@ -5,7 +5,7 @@
 
 from pathlib import Path
 
-from slate import gpr_loader, models
+from blackrock import gpr_loader, models
 
 
 def _paths():

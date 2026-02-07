@@ -5,8 +5,8 @@
 
 from pathlib import Path
 
-from slate import instruction_loader
-from slate.instance import (
+from blackrock import instruction_loader
+from blackrock.instance import (
     InstructionInstance,
     OperandInfo,
     RegisterContext,

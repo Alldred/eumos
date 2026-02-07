@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from slate import validation
+from blackrock import validation
 
 
 def test_load_yaml_returns_expected_dict():

@@ -5,7 +5,7 @@
 
 from pathlib import Path
 
-from slate import csr_loader, models
+from blackrock import csr_loader, models
 
 
 def _paths():
