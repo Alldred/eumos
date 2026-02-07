@@ -5,7 +5,7 @@
 
 from pathlib import Path
 
-from slate import instruction_loader, models
+from blackrock import instruction_loader, models
 
 
 def _paths():

@@ -1,5 +1,5 @@
 [project]
-name = "slate"
+name = "blackrock"
 version = "0.1.0"
 description = "Python RISCV manual"
 readme = "README.md"
@@ -18,11 +18,11 @@ requires-python = ">= 3.13"
 dev = ["pytest", "pytest-cov"]
 
 [tool.pytest.ini_options]
-pythonpath = ["slate"]
+pythonpath = ["blackrock"]
 testpaths = ["tests"]
 
 [tool.coverage.run]
-source = ["slate"]
+source = ["blackrock"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -31,3 +31,6 @@ exclude_lines = [
     "raise AssertionError",
     "raise NotImplementedError",
 ]
+
+[tool.setuptools]
+include-package-data = true

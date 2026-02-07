@@ -3,7 +3,7 @@
   ~ Copyright (c) 2026 Stuart Alldred. All Rights Reserved
   -->
 
-Slate is a python-based machine readable specification for RISCV.
+Blackrock is a python-based machine readable specification for RISCV.
 
 Will be very basic/limited to begin with, but will be adding more extensions and information over time.
 
@@ -46,7 +46,7 @@ Use `uv run pytest -v` for verbose, or `uv run pytest tests/test_instance.py` to
 Run tests with code coverage:
 
 ```bash
-uv run pytest --cov=slate --cov-report=term-missing
+uv run pytest --cov=blackrock --cov-report=term-missing
 ```
 
 Add `--cov-report=html` to generate an HTML report in `htmlcov/`.

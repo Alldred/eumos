@@ -3,7 +3,7 @@
 
 # Example usage of instruction_loader.py
 
-from slate.instruction_loader import load_all_instructions
+from blackrock.instruction_loader import load_all_instructions
 
 # Adjust the path as needed for your instruction YAML files
 instr_dir = "../arch/rv64/instructions/I"

@@ -5,7 +5,7 @@
 
 from pathlib import Path
 
-from slate import format_loader, models
+from blackrock import format_loader, models
 
 
 def _format_dir():

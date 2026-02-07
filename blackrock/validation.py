@@ -3,9 +3,8 @@
 
 """YAML loading and schema validation (pykwalify)."""
 
-from pykwalify.core import Core
-
 import yaml
+from pykwalify.core import Core
 
 
 def validate_yaml_schema(yaml_path, schema_path):

@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2025 Stuart Alldred. All Rights Reserved
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
-# Jump to SLATE_ROOT
-cd $SLATE_ROOT
+# Jump to BLACKROCK_ROOT
+cd $BLACKROCK_ROOT
 
-# Custom prompt to make it clear this is the slate environment
-PROMPT="[SLATE]:$PROMPT"
+# Custom prompt to make it clear this is the Blackrock environment
+PROMPT="[BR]:$PROMPT"
 
 # Inherit the user history location
 export HISTFILE=$USER_HISTFILE
@@ -13,20 +13,17 @@ export HISTFILE=$USER_HISTFILE
 # Incrementally append to history file
 setopt INC_APPEND_HISTORY
 
-# Ensure UV environment is installed
-if [ ! -d ".venv" ]; then
-    echo "# Creating virtual environment with UV"
-    uv venv .venv
+# Ensure uv environment is installed
+echo "# Checking Python environment is up-to-date"
+if [ ! -d ".venv" ] || [ ! -f "uv.lock" ]; then
+    uv lock
+    uv sync --extra dev
 fi
 
-# Activate the UV virtual environment
+# Activate the uv virtual environment
+echo "# Activating virtual environment"
+export VIRTUAL_ENV_DISABLE_PROMPT=1
 source .venv/bin/activate
-
-# Sync dependencies with UV
-if [ -f "pyproject.toml" ]; then
-    echo "# Syncing dependencies with UV"
-    uv sync
-fi
 
 # Install pre-commit
 echo "# Setting up pre-commit hooks"
