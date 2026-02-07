@@ -88,6 +88,11 @@ def load_instruction(instr_path, format_dir):
     )
 
 
+# Note: InstructionDef.operands are the logical inputs (registers, immediates, etc.) used by the instruction.
+#       InstructionDef.fields are the bit-level encoding details for those operands and other instruction components.
+#       Operands represent what the instruction uses semantically; fields represent how those values are encoded in the instruction word.
+
+
 def load_all_instructions(
     instr_root="arch/rv64/instructions", format_dir="arch/rv64/formats"
 ):

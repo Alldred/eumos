@@ -18,28 +18,30 @@ def _project_root():
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def load_gprs(
-    gpr_path: Optional[str] = None, schema_path: Optional[str] = None
+def load_all_gprs(
+    gpr_root: Optional[str] = None, schema_path: Optional[str] = None
 ) -> Dict[int, GPRDef]:
-    """Load and validate GPR YAML; returns dict index -> GPRDef."""
-    if gpr_path is None:
-        gpr_path = os.path.join(_project_root(), "arch", "rv64", "gprs.yml")
+    """Load and validate all GPR YAML files in gpr_root; returns dict index -> GPRDef."""
+    if gpr_root is None:
+        gpr_root = os.path.join(_project_root(), "arch", "rv64", "gprs")
     if schema_path is None:
         schema_path = os.path.join(
-            _project_root(), "arch", "schemas", "gpr_schema.yaml"
+            _project_root(), "arch", "schemas", "gpr_file_schema.yaml"
         )
-    validate_yaml_schema(gpr_path, schema_path)
-    data = load_yaml(gpr_path)
     result: Dict[int, GPRDef] = {}
-    for entry in data:
-        idx = entry["index"]
-        if not (0 <= idx <= 31):
-            raise ValueError(f"GPR index must be 0..31, got {idx}")
-        result[idx] = GPRDef(
-            index=idx,
-            abi_name=entry["abi_name"],
-            reset_value=entry["reset_value"],
-            access=entry["access"],
-            source_file=gpr_path,
-        )
+    for file in os.listdir(gpr_root):
+        if file.endswith(".yml") or file.endswith(".yaml"):
+            gpr_path = os.path.join(gpr_root, file)
+            validate_yaml_schema(gpr_path, schema_path)
+            data = load_yaml(gpr_path)
+            idx = data["index"]
+            if not (0 <= idx <= 31):
+                raise ValueError(f"GPR index must be 0..31, got {idx}")
+            result[idx] = GPRDef(
+                index=idx,
+                abi_name=data["abi_name"],
+                reset_value=data["reset_value"],
+                access=data["access"],
+                source_file=gpr_path,
+            )
     return result

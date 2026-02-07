@@ -26,7 +26,7 @@ uv sync --extra dev
 To see how to use the instruction loader, run the example script:
 
 ```bash
-python3 example/instruction_loader_example.py
+python3 -m example.blackrock_example
 ```
 
 This will load instructions from the YAML files and print a summary.

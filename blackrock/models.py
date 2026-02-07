@@ -58,7 +58,14 @@ class FieldEncoding:
 
 @dataclass
 class InstructionDef:
-    """ISA definition for one instruction: mnemonic, format, operands, fields, fixed_values, extension."""
+    """
+    ISA definition for one instruction: mnemonic, format, operands, fields, fixed_values, extension.
+
+    - operands: The logical inputs to the instruction (registers, immediates, etc.).
+      These represent what the instruction uses semantically.
+    - fields: The bit-level encoding details for those operands and other instruction components.
+      Fields describe how each operand (and other values like opcode) are represented in the binary encoding.
+    """
 
     name: str
     mnemonic: str

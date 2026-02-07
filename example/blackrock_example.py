@@ -3,44 +3,48 @@
 
 # Example usage of Blackrock class
 
-from blackrock.blackrock import Blackrock
+from blackrock import Blackrock
 
 # Instantiate Blackrock (requires $BLACKROCK_ROOT to be set in the environment)
 br = Blackrock()
 
-# Access and print summary for CSRs
-gpr_names = br.gprs.keys() if hasattr(br.gprs, "keys") else br.gprs
-print(f"Loaded GPRs: {gpr_names}")
+print("\n=== Blackrock Example Output ===\n")
+
+# Access and print summary for GPRs
+print(f"Loaded {len(br.gprs)} GPRs.")
+example_gpr_idx, example_gpr = next(iter(br.gprs.items()))
+print(
+    f"Example GPR:\n  x{example_gpr_idx} ({example_gpr.abi_name})\n  reset_value: {example_gpr.reset_value}\n  access: {example_gpr.access}\n"
+)
+
 print(f"Loaded {len(br.csrs)} CSRs.")
-for csr_name, csr in br.csrs.items():
-    print(f"CSR: {csr_name}, address: {csr.address}, privilege: {csr.privilege}")
+for csr_name, csr in sorted(br.csrs.items()):
+    print(
+        f"Example CSR:\n  {csr_name}\n  address: {csr.address}\n  privilege: {csr.privilege}\n"
+    )
     break  # Show only the first CSR for brevity
 
-# Access and print summary for formats
 print(f"Loaded {len(br.formats)} instruction formats.")
-for fmt_name, fmt in br.formats.items():
-    print(f"Format: {fmt_name}, asm_format: {getattr(fmt, 'asm_format', None)}")
+for fmt_name, fmt in sorted(br.formats.items()):
+    print(
+        f"Example Format:\n  {fmt_name}\n  asm_format: {getattr(fmt, 'asm_format', None)}\n"
+    )
     break  # Show only the first format for brevity
 
-# Access and print summary for instructions
 print(f"Loaded {len(br.instructions)} instructions.")
-for name, details in br.instructions.items():
-    print(f"Instruction: {name}")
-    print("  Description:", details.description)
+for name, details in sorted(br.instructions.items()):
+    print(f"Example Instruction:\n  {name}\n  Description: {details.description}\n")
     print(
-        "  Format:",
-        details.format.asm_format
-        if hasattr(details.format, "asm_format")
-        else details.format,
+        f"  Format: {details.format.asm_format if hasattr(details.format, 'asm_format') else details.format}"
     )
     print("  Operands:")
-    for op_name, op in details.operands.items():
+    for op_name, op in sorted(details.operands.items()):
         print(f"    {op_name}: type={op.type}, size={op.size}, data={op.data}")
     print("  Fields:")
-    for field_name, field in details.fields.items():
+    for field_name, field in sorted(details.fields.items()):
         print(
             f"    {field_name}: type={field.type}, bits={getattr(field, 'bits', None)}, parts={getattr(field, 'parts', None)}"
         )
-    print("  Extension:", details.extension)
-    print("  Source file:", details.source_file)
+    print(f"  Extension: {details.extension}")
+    print(f"  Source file: {details.source_file}\n")
     break  # Show only the first instruction for brevity

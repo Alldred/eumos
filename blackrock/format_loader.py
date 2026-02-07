@@ -35,3 +35,14 @@ def load_format(format_dir, format_name):
         fields=fields,
         description=data.get("description", ""),
     )
+
+
+def load_all_formats(format_root):
+    """Load all format YAML files in format_root; returns dict name -> FormatDef."""
+    formats = {}
+    for file in os.listdir(format_root):
+        if file.endswith(".yml") or file.endswith(".yaml"):
+            name = os.path.splitext(file)[0]
+            fmt = load_format(format_root, name)
+            formats[name] = fmt
+    return formats
