@@ -65,4 +65,24 @@ class Blackrock:
         self.formats = self._load_formats()
         self.instructions = self._load_instructions()
 
+    @property
+    def gpr_count(self):
+        """Return the number of loaded GPRs."""
+        return len(self.gprs)
+
+    @property
+    def csr_count(self):
+        """Return the number of loaded CSRs."""
+        return len(self.csrs)
+
+    @property
+    def format_count(self):
+        """Return the number of loaded instruction formats."""
+        return len(self.formats)
+
+    @property
+    def instruction_count(self):
+        """Return the number of loaded instructions."""
+        return len(self.instructions)
+
     # Optionally add validation or other utility methods
