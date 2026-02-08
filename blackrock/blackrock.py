@@ -64,25 +64,37 @@ class Blackrock:
         self.gprs = self._load_gprs()
         self.formats = self._load_formats()
         self.instructions = self._load_instructions()
+        # Reset cached counts
+        for attr in ("_gpr_count", "_csr_count", "_format_count", "_instruction_count"):
+            if hasattr(self, attr):
+                delattr(self, attr)
 
     @property
     def gpr_count(self):
-        """Return the number of loaded GPRs."""
-        return len(self.gprs)
+        """Return the number of loaded GPRs (cached)."""
+        if not hasattr(self, "_gpr_count"):
+            self._gpr_count = len(self.gprs)
+        return self._gpr_count
 
     @property
     def csr_count(self):
-        """Return the number of loaded CSRs."""
-        return len(self.csrs)
+        """Return the number of loaded CSRs (cached)."""
+        if not hasattr(self, "_csr_count"):
+            self._csr_count = len(self.csrs)
+        return self._csr_count
 
     @property
     def format_count(self):
-        """Return the number of loaded instruction formats."""
-        return len(self.formats)
+        """Return the number of loaded instruction formats (cached)."""
+        if not hasattr(self, "_format_count"):
+            self._format_count = len(self.formats)
+        return self._format_count
 
     @property
     def instruction_count(self):
-        """Return the number of loaded instructions."""
-        return len(self.instructions)
+        """Return the number of loaded instructions (cached)."""
+        if not hasattr(self, "_instruction_count"):
+            self._instruction_count = len(self.instructions)
+        return self._instruction_count
 
     # Optionally add validation or other utility methods
