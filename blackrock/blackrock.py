@@ -37,37 +37,21 @@ class Blackrock:
             Path(arch_root) if not isinstance(arch_root, Path) else arch_root
         )
         self.arch_root = self.arch_root.resolve()
-        self.csrs = self._sorted_dict(self._load_csrs())
-        self.gprs = self._sorted_dict(self._load_gprs())
-        self.formats = self._sorted_dict(self._load_formats())
-        self.instructions = self._sorted_dict(self._load_instructions())
+        self.csrs = self._sorted_dict(load_all_csrs())
+        self.gprs = self._sorted_dict(load_all_gprs())
+        self.formats = self._sorted_dict(load_all_formats())
+        self.instructions = self._sorted_dict(load_all_instructions())
 
     def _sorted_dict(self, d):
         if not isinstance(d, dict):
             return d
         return dict(sorted(d.items()))
 
-    def _load_csrs(self):
-        csr_root = self.arch_root / "csrs"
-        return load_all_csrs(csr_root)
-
-    def _load_gprs(self):
-        gpr_root = self.arch_root / "gprs"
-        return load_all_gprs(gpr_root)
-
-    def _load_formats(self):
-        format_root = self.arch_root / "formats"
-        return load_all_formats(format_root)
-
-    def _load_instructions(self):
-        instruction_root = self.arch_root / "instructions"
-        return load_all_instructions(instruction_root)
-
     def reload(self):
-        self.csrs = self._load_csrs()
-        self.gprs = self._load_gprs()
-        self.formats = self._load_formats()
-        self.instructions = self._load_instructions()
+        self.csrs = load_all_csrs()
+        self.gprs = load_all_gprs()
+        self.formats = load_all_formats()
+        self.instructions = load_all_instructions()
         # Reset cached counts
         for attr in ("_gpr_count", "_csr_count", "_format_count", "_instruction_count"):
             if hasattr(self, attr):

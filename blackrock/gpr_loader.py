@@ -6,8 +6,8 @@
 import os
 from typing import Dict
 
-from models import GPR
-from validation import load_yaml, validate_yaml_schema
+from .models import GPR
+from .validation import load_yaml, validate_yaml_schema
 
 
 def load_all_gprs() -> Dict[str, GPR]:

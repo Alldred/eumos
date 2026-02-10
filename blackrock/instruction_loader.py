@@ -6,17 +6,20 @@
 import os
 from typing import Dict
 
-from models import Instruction
-from validation import load_yaml, validate_yaml_schema
+from .models import Instruction
+from .validation import load_yaml, validate_yaml_schema
 
 
 def load_instruction(file_path: str, schema_path: str) -> Instruction:
-    """Load and validate a single instruction YAML file."""
+    """Load and validate a single instruction YAML file. Expects exactly one instruction per file."""
     validate_yaml_schema(file_path, schema_path)
     data = load_yaml(file_path)
-    for instr in data["instructions"]:
-        return Instruction(**instr)
-    raise ValueError(f"No instruction found in {file_path}")
+    instructions = data["instructions"]
+    if len(instructions) != 1:
+        raise ValueError(
+            f"Expected exactly one instruction in {file_path}, found {len(instructions)}."
+        )
+    return Instruction(**instructions[0])
 
 
 def load_all_instructions() -> Dict[str, Instruction]:

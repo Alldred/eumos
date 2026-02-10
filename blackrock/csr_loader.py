@@ -6,8 +6,8 @@
 import os
 from typing import Dict
 
-from models import CSR
-from validation import load_yaml, validate_yaml_schema
+from .models import CSR
+from .validation import load_yaml, validate_yaml_schema
 
 
 def load_csr(file_path: str, schema_path: str) -> CSR:
