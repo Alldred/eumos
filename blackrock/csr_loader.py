@@ -11,12 +11,13 @@ from .validation import load_yaml, validate_yaml_schema
 
 
 def load_csr(file_path: str, schema_path: str) -> CSR:
-    """Load and validate a single CSR YAML file."""
+    """Load and validate a single CSR YAML file. Expects exactly one CSR per file."""
     validate_yaml_schema(file_path, schema_path)
     data = load_yaml(file_path)
-    for csr in data["csrs"]:
-        return CSR(**csr)
-    raise ValueError(f"No CSR found in {file_path}")
+    csrs = data["csrs"]
+    if len(csrs) != 1:
+        raise ValueError(f"Expected exactly one CSR in {file_path}, found {len(csrs)}.")
+    return CSR(**csrs[0])
 
 
 def load_all_csrs() -> Dict[str, CSR]:

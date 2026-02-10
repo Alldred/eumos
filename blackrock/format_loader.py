@@ -11,12 +11,15 @@ from .validation import load_yaml, validate_yaml_schema
 
 
 def load_format(file_path: str, schema_path: str) -> Format:
-    """Load and validate a single format YAML file."""
+    """Load and validate a single format YAML file. Expects exactly one format per file."""
     validate_yaml_schema(file_path, schema_path)
     data = load_yaml(file_path)
-    for fmt in data["formats"]:
-        return Format(**fmt)
-    raise ValueError(f"No format found in {file_path}")
+    formats = data["formats"]
+    if len(formats) != 1:
+        raise ValueError(
+            f"Expected exactly one format in {file_path}, found {len(formats)}."
+        )
+    return Format(**formats[0])
 
 
 def load_all_formats() -> Dict[str, Format]:

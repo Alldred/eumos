@@ -3,9 +3,6 @@
 
 """Blackrock main class and arch_root normalization."""
 
-from pathlib import Path
-from typing import Union
-
 from .csr_loader import load_all_csrs
 from .format_loader import load_all_formats
 from .gpr_loader import load_all_gprs
@@ -17,26 +14,21 @@ class Blackrock:
     Blackrock is the central class for loading and organizing RISC-V architecture data from YAML files.
 
     Attributes:
-        arch_root (Path): Root directory for architecture data.
         csrs (dict): Loaded Control and Status Registers.
         gprs (dict): Loaded General Purpose Registers.
         formats (dict): Loaded instruction formats.
         instructions (dict): Loaded instructions.
 
     Example:
-        br = Blackrock(arch_root="path/to/arch")
+        br = Blackrock()
         print(br.csrs)
         print(br.gprs)
         print(br.formats)
         print(br.instructions)
     """
 
-    def __init__(self, arch_root: Union[str, Path]):
-        """Initialize Blackrock with normalized arch_root as Path."""
-        self.arch_root = (
-            Path(arch_root) if not isinstance(arch_root, Path) else arch_root
-        )
-        self.arch_root = self.arch_root.resolve()
+    def __init__(self):
+        """Initialize Blackrock and load all architecture data from built-in package paths."""
         self.csrs = self._sorted_dict(load_all_csrs())
         self.gprs = self._sorted_dict(load_all_gprs())
         self.formats = self._sorted_dict(load_all_formats())
