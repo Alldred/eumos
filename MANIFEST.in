@@ -1,2 +1,2 @@
 # MANIFEST.in
-recursive-include arch *
+recursive-include blackrock/arch *
