@@ -3,6 +3,7 @@
 
 """Load RISC-V GPR YAML into Python objects."""
 
+import importlib.resources
 import os
 import sys
 from typing import Dict, Optional
@@ -14,8 +15,8 @@ from validation import load_yaml, validate_yaml_schema
 
 
 def _project_root():
-    """Project root (parent of python/)."""
-    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    """Return the package root for importlib.resources."""
+    return importlib.resources.files("blackrock")
 
 
 def load_all_gprs(
@@ -23,11 +24,13 @@ def load_all_gprs(
 ) -> Dict[int, GPRDef]:
     """Load and validate all GPR YAML files in gpr_root; returns dict index -> GPRDef."""
     if gpr_root is None:
-        gpr_root = os.path.join(_project_root(), "arch", "rv64", "gprs")
+        gpr_root = os.path.join(os.path.dirname(__file__), "arch", "rv64", "gprs")
+        gpr_root = os.path.abspath(gpr_root)
     if schema_path is None:
         schema_path = os.path.join(
-            _project_root(), "arch", "schemas", "gpr_file_schema.yaml"
+            os.path.dirname(__file__), "arch", "schemas", "gpr_file_schema.yaml"
         )
+        schema_path = os.path.abspath(schema_path)
     result: Dict[int, GPRDef] = {}
     for file in os.listdir(gpr_root):
         if file.endswith(".yml") or file.endswith(".yaml"):

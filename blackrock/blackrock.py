@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-2026 Stuart Alldred. All Rights Reserved
 
-import os
+import importlib.resources
 
 from .csr_loader import load_all_csrs
 from .format_loader import load_all_formats
@@ -30,8 +30,8 @@ class Blackrock:
 
     def __init__(self, arch_root: str = None):
         if arch_root is None:
-            env_root = os.environ["BLACKROCK_ROOT"]
-            arch_root = os.path.join(env_root, "arch", "rv64")
+            # Use package-relative path for arch_root
+            arch_root = importlib.resources.files("blackrock") / "arch" / "rv64"
         self.arch_root = arch_root
         self.csrs = self._sorted_dict(self._load_csrs())
         self.gprs = self._sorted_dict(self._load_gprs())
@@ -44,19 +44,19 @@ class Blackrock:
         return dict(sorted(d.items()))
 
     def _load_csrs(self):
-        csr_root = os.path.join(self.arch_root, "csrs")
+        csr_root = self.arch_root / "csrs"
         return load_all_csrs(csr_root)
 
     def _load_gprs(self):
-        gpr_root = os.path.join(self.arch_root, "gprs")
+        gpr_root = self.arch_root / "gprs"
         return load_all_gprs(gpr_root)
 
     def _load_formats(self):
-        format_root = os.path.join(self.arch_root, "formats")
+        format_root = self.arch_root / "formats"
         return load_all_formats(format_root)
 
     def _load_instructions(self):
-        instruction_root = os.path.join(self.arch_root, "instructions")
+        instruction_root = self.arch_root / "instructions"
         return load_all_instructions(instruction_root)
 
     def reload(self):

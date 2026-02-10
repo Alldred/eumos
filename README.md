@@ -66,3 +66,19 @@ Add `--cov-report=html` to generate an HTML report in `htmlcov/`.
 - **ISA** (from `instance`) holds optional `instructions` and/or `csrs`; you can load either or both (e.g. `ISA(instructions=load_all_instructions(), csrs=load_all_csrs())`). When CSRs are loaded, `isa.csrs_by_address` maps 12-bit address -> **CSRDef** for resolving the `imm` operand of CSR instructions.
 - **CSRContext** (from `instance`) maps CSR address or name to runtime values; optionally pass `csr_defs` so that `set`/`get_value` accept names (e.g. `"mstatus"`) and `get_name`/`get_address` work.
 - For CSR instructions (e.g. `csrrw`, `csrrs`), the `imm` operand in `operand_values` is the 12-bit CSR address. Use **ISA.resolve_csr(instruction_instance, csr_context)** to get the **CSRDef** and current value (if a **CSRContext** is provided).
+
+## Data Directory Requirement
+
+Blackrock requires the RISC-V architecture YAML files to be available in the `arch/` directory at the root of your project or package installation. If you install Blackrock as a package, these files will be included automatically if you use the provided `MANIFEST.in` and `pyproject.toml` configuration.
+
+If you wish to use a custom data directory, you can specify the path explicitly when calling loader functions, or set the environment variable `BLACKROCK_ROOT` to the directory containing `arch/`. For example:
+
+```python
+br = Blackrock(arch_root="/custom/path/to/arch/rv64")
+```
+
+Or set the environment variable:
+
+```sh
+export BLACKROCK_ROOT=/custom/path/to/arch
+```

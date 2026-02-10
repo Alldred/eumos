@@ -8,8 +8,10 @@ InstructionDef, FormatDef, Operand, and related types. Run as a script
 to print a sample instruction: python3 python/instruction_loader.py
 """
 
+import importlib.resources
 import os
 import sys
+from typing import Dict, Optional
 
 # So that running python3 python/instruction_loader.py from repo root finds sibling modules
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -24,8 +26,8 @@ from validation import load_yaml, validate_yaml_schema
 
 
 def _project_root():
-    """Project root (parent of python/)."""
-    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    """Return the package root for importlib.resources."""
+    return importlib.resources.files("blackrock")
 
 
 def load_instruction(instr_path, format_dir):
@@ -94,14 +96,22 @@ def load_instruction(instr_path, format_dir):
 
 
 def load_all_instructions(
-    instr_root="arch/rv64/instructions", format_dir="arch/rv64/formats"
-):
-    """Walk instr_root for .yml/.yaml instruction files and load each; returns dict mnemonic -> InstructionDef."""
-    instructions = {}
-    for root, _, files in os.walk(instr_root):
+    instr_root: Optional[str] = None, format_dir: Optional[str] = None
+) -> Dict[str, InstructionDef]:
+    """Load all instruction YAML files in instr_root; returns dict name -> InstructionDef."""
+    if instr_root is None:
+        instr_root = os.path.join(
+            os.path.dirname(__file__), "arch", "rv64", "instructions"
+        )
+        instr_root = os.path.abspath(instr_root)
+    if format_dir is None:
+        format_dir = os.path.join(os.path.dirname(__file__), "arch", "rv64", "formats")
+        format_dir = os.path.abspath(format_dir)
+    result: Dict[str, InstructionDef] = {}
+    for root, dirs, files in os.walk(instr_root):
         for file in files:
-            if file.endswith((".yml", ".yaml")):
-                instr_path = os.path.join(root, file)
-                instr = load_instruction(instr_path, format_dir)
-                instructions[instr.mnemonic] = instr
-    return instructions
+            if file.endswith(".yml") or file.endswith(".yaml"):
+                name = os.path.splitext(file)[0]
+                file_path = os.path.join(root, file)
+                result[name] = load_instruction(file_path, format_dir)
+    return result

@@ -1,1 +1,2 @@
-recursive-include arch *.yml *.yaml
+# MANIFEST.in
+recursive-include arch *
