@@ -1,65 +1,35 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
-"""Load format YAML (R, I, S, B, etc.) into FormatDef."""
+"""Load RISC-V format YAML into Python objects."""
 
-import importlib.resources
 import os
-from typing import Dict, Optional
+from typing import Dict
 
-from models import FieldDef, FieldPart, FormatDef
+from models import Format
 from validation import load_yaml, validate_yaml_schema
 
 
-def _project_root():
-    """Return the package root for importlib.resources."""
-    return importlib.resources.files("blackrock")
+def load_format(file_path: str, schema_path: str) -> Format:
+    """Load and validate a single format YAML file."""
+    validate_yaml_schema(file_path, schema_path)
+    data = load_yaml(file_path)
+    for fmt in data["formats"]:
+        return Format(**fmt)
+    raise ValueError(f"No format found in {file_path}")
 
 
-def load_format(format_dir, format_name):
-    """Load and validate one format (e.g. I, R, S, B) from format_dir; returns FormatDef."""
-    path = os.path.join(format_dir, format_name + ".yml")
+def load_all_formats() -> Dict[str, Format]:
+    """Load all format YAML files in arch/rv64/formats; returns dict name -> Format."""
+    format_root = os.path.join(os.path.dirname(__file__), "arch", "rv64", "formats")
+    format_root = os.path.abspath(format_root)
     schema_path = os.path.join(
-        os.path.dirname(__file__), "arch", "schemas", "format_schema.yaml"
+        os.path.dirname(__file__), "arch", "schemas", "format_file_schema.yaml"
     )
-    schema_path = os.path.abspath(schema_path)
-    validate_yaml_schema(path, schema_path)
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"Format file not found: {path}")
-    data = load_yaml(path)
-    fields = []
-    for fld in data.get("fields", []):
-        if "parts" in fld:
-            parts = [
-                FieldPart(bits=p["bits"], operand_bits=p.get("operand_bits"))
-                for p in fld["parts"]
-            ]
-            fields.append(FieldDef(name=fld["name"], type=fld["type"], parts=parts))
-        else:
-            fields.append(FieldDef(**fld))
-    return FormatDef(
-        name=data["name"],
-        fullname=data.get("fullname", ""),
-        asm_format=data.get("asm_format", ""),
-        fields=fields,
-        description=data.get("description", ""),
-    )
-
-
-def load_all_formats(format_root: Optional[str] = None) -> Dict[str, FormatDef]:
-    """Load all format YAML files in format_root; returns dict name -> FormatDef."""
-    if format_root is None:
-        format_root = os.path.join(os.path.dirname(__file__), "arch", "rv64", "formats")
-        format_root = os.path.abspath(format_root)
-    schema_path = os.path.join(
-        os.path.dirname(__file__), "arch", "schemas", "format_schema.yaml"
-    )
-    schema_path = os.path.abspath(schema_path)
-    result: Dict[str, FormatDef] = {}
+    result: Dict[str, Format] = {}
     for file in os.listdir(format_root):
         if file.endswith(".yml") or file.endswith(".yaml"):
-            name = os.path.splitext(file)[0]
-            path = os.path.join(format_root, file)
-            validate_yaml_schema(path, schema_path)
-            result[name] = load_format(format_root, name)
+            file_path = os.path.join(format_root, file)
+            fmt_obj = load_format(file_path, schema_path)
+            result[fmt_obj.name] = fmt_obj
     return result

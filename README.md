@@ -3,9 +3,10 @@
   ~ Copyright (c) 2026 Stuart Alldred. All Rights Reserved
   -->
 
-Blackrock is a python-based machine readable specification for RISCV.
+<!-- SPDX-License-Identifier: MIT -->
+<!-- Copyright (c) 2026 Stuart Alldred. All Rights Reserved -->
 
-Will be very basic/limited to begin with, but will be adding more extensions and information over time.
+Blackrock is a Python-based machine-readable specification for RISC-V.
 
 ## Running
 
@@ -29,7 +30,7 @@ To see how to use the instruction loader, run the example script:
 python3 -m example.blackrock_example
 ```
 
-This will load instructions from the YAML files and print a summary.
+This will load instructions from the built-in YAML files and print a summary.
 
 ### Tests
 
@@ -53,32 +54,22 @@ Add `--cov-report=html` to generate an HTML report in `htmlcov/`.
 
 ## Data model
 
-- **load_all_instructions()** returns a dict: mnemonic (e.g. `"addi"`, `"sd"`) -> **InstructionDef**.
-- Each **InstructionDef** has: `name`, `mnemonic`, `format` (a **FormatDef**), `operands` (name -> **Operand**), `fields` (name -> **FieldEncoding**), `inputs` (ordered list), `fixed_values` (opcode, funct3, funct7), `imm`, `description`, and `extension`.
-- **FormatDef** has `asm_format` (e.g. `"{mnemonic} {rd}, {rs1}, {imm}"`) and `fields` (list of **FieldDef**). Encoding bit ranges come from `fields`; for split immediates (S/B type), use `parts[].bits` and `parts[].operand_bits`.
+- **load_all_instructions()** returns a dict: mnemonic (e.g. `"addi"`, `"sd"`) -> **Instruction**.
+- Each **Instruction** has: `name`, `mnemonic`, `format` (a **Format**), `operands` (name -> **Operand**), `fields` (name -> **FieldEncoding**), `inputs` (ordered list), `fixed_values` (opcode, funct3, funct7), `imm`, `description`, and `extension`.
+- **Format** has `asm_format` (e.g. `"{mnemonic} {rd}, {rs1}, {imm}"`) and `fields` (list of **FieldDef**). Encoding bit ranges come from `fields`; for split immediates (S/B type), use `parts[].bits` and `parts[].operand_bits`.
 - For user data (concrete operand values, register names/values), use **InstructionInstance** and **RegisterContext** from `instance`; `get_operand_info(name)` returns **OperandInfo**, which combines ISA and user data per operand.
 - **Decoder**: use **decoder.Decoder** or **decoder.decode(word)** to decode a 32-bit instruction word into an **InstructionInstance** with `instruction` and `operand_values` filled from the encoding (rd, rs1, rs2, imm, etc.). Without a **RegisterContext**, GPR values and resolved names are not populated; only what can be decoded from the bits is set.
 
 ## CSRs
 
-- **load_all_csrs()** (from `csr_loader`) returns a dict: name (e.g. `"mstatus"`, `"mepc"`) -> **CSRDef**. CSR YAML files live under `yaml/rv64/csrs/` and are validated by `yaml/schemas/csr_schema.yaml`.
-- **CSRDef** has `name`, `address` (12-bit), `description`, and optional `privilege`, `access`, `width`, `extension`.
-- **ISA** (from `instance`) holds optional `instructions` and/or `csrs`; you can load either or both (e.g. `ISA(instructions=load_all_instructions(), csrs=load_all_csrs())`). When CSRs are loaded, `isa.csrs_by_address` maps 12-bit address -> **CSRDef** for resolving the `imm` operand of CSR instructions.
+- **load_all_csrs()** (from `csr_loader`) returns a dict: name (e.g. `"mstatus"`, `"mepc"`) -> **CSR**. CSR YAML files are loaded from the built-in `arch/rv64/csrs/` directory and validated by `arch/schemas/csr_file_schema.yaml`.
+- **CSR** has `name`, `address` (12-bit), `description`, and optional `privilege`, `access`, `width`, `extension`.
+- **ISA** (from `instance`) holds optional `instructions` and/or `csrs`; you can load either or both (e.g. `ISA(instructions=load_all_instructions(), csrs=load_all_csrs())`). When CSRs are loaded, `isa.csrs_by_address` maps 12-bit address -> **CSR** for resolving the `imm` operand of CSR instructions.
 - **CSRContext** (from `instance`) maps CSR address or name to runtime values; optionally pass `csr_defs` so that `set`/`get_value` accept names (e.g. `"mstatus"`) and `get_name`/`get_address` work.
-- For CSR instructions (e.g. `csrrw`, `csrrs`), the `imm` operand in `operand_values` is the 12-bit CSR address. Use **ISA.resolve_csr(instruction_instance, csr_context)** to get the **CSRDef** and current value (if a **CSRContext** is provided).
+- For CSR instructions (e.g. `csrrw`, `csrrs`), the `imm` operand in `operand_values` is the 12-bit CSR address. Use **ISA.resolve_csr(instruction_instance, csr_context)** to get the **CSR** and current value (if a **CSRContext** is provided).
 
-## Data Directory Requirement
+## Data Directory and Packaging
 
-Blackrock requires the RISC-V architecture YAML files to be available in the `arch/` directory at the root of your project or package installation. If you install Blackrock as a package, these files will be included automatically if you use the provided `MANIFEST.in` and `pyproject.toml` configuration.
+All RISC-V YAML data and schema files are included in the package under the `arch/` directory. Loader functions always load from this built-in location; there is no support for user-specified data directories or environment variables. All schema and data files are included automatically via `pyproject.toml` and `MANIFEST.in`.
 
-If you wish to use a custom data directory, you can specify the path explicitly when calling loader functions, or set the environment variable `BLACKROCK_ROOT` to the directory containing `arch/`. For example:
-
-```python
-br = Blackrock(arch_root="/custom/path/to/arch/rv64")
-```
-
-Or set the environment variable:
-
-```sh
-export BLACKROCK_ROOT=/custom/path/to/arch
-```
+If you install Blackrock as a package, all required data files are available and no additional configuration is needed.
