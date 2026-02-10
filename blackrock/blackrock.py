@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2025-2026 Stuart Alldred. All Rights Reserved
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
-import os
+"""Blackrock main class and arch_root normalization."""
 
 from .csr_loader import load_all_csrs
 from .format_loader import load_all_formats
@@ -14,7 +14,6 @@ class Blackrock:
     Blackrock is the central class for loading and organizing RISC-V architecture data from YAML files.
 
     Attributes:
-        arch_root (str): Root directory for architecture data.
         csrs (dict): Loaded Control and Status Registers.
         gprs (dict): Loaded General Purpose Registers.
         formats (dict): Loaded instruction formats.
@@ -28,42 +27,23 @@ class Blackrock:
         print(br.instructions)
     """
 
-    def __init__(self, arch_root: str = None):
-        if arch_root is None:
-            env_root = os.environ["BLACKROCK_ROOT"]
-            arch_root = os.path.join(env_root, "arch", "rv64")
-        self.arch_root = arch_root
-        self.csrs = self._sorted_dict(self._load_csrs())
-        self.gprs = self._sorted_dict(self._load_gprs())
-        self.formats = self._sorted_dict(self._load_formats())
-        self.instructions = self._sorted_dict(self._load_instructions())
+    def __init__(self):
+        """Initialize Blackrock and load all architecture data from built-in package paths."""
+        self.csrs = self._sorted_dict(load_all_csrs())
+        self.gprs = self._sorted_dict(load_all_gprs())
+        self.formats = self._sorted_dict(load_all_formats())
+        self.instructions = self._sorted_dict(load_all_instructions())
 
     def _sorted_dict(self, d):
         if not isinstance(d, dict):
             return d
         return dict(sorted(d.items()))
 
-    def _load_csrs(self):
-        csr_root = os.path.join(self.arch_root, "csrs")
-        return load_all_csrs(csr_root)
-
-    def _load_gprs(self):
-        gpr_root = os.path.join(self.arch_root, "gprs")
-        return load_all_gprs(gpr_root)
-
-    def _load_formats(self):
-        format_root = os.path.join(self.arch_root, "formats")
-        return load_all_formats(format_root)
-
-    def _load_instructions(self):
-        instruction_root = os.path.join(self.arch_root, "instructions")
-        return load_all_instructions(instruction_root)
-
     def reload(self):
-        self.csrs = self._load_csrs()
-        self.gprs = self._load_gprs()
-        self.formats = self._load_formats()
-        self.instructions = self._load_instructions()
+        self.csrs = load_all_csrs()
+        self.gprs = load_all_gprs()
+        self.formats = load_all_formats()
+        self.instructions = load_all_instructions()
         # Reset cached counts
         for attr in ("_gpr_count", "_csr_count", "_format_count", "_instruction_count"):
             if hasattr(self, attr):
