@@ -1,5 +1,5 @@
 [project]
-name = "blackrock"
+name = "eumos"
 version = "0.1.0"
 description = "Python RISCV manual"
 readme = "README.md"
@@ -18,11 +18,11 @@ requires-python = ">= 3.13"
 dev = ["pytest", "pytest-cov"]
 
 [tool.pytest.ini_options]
-pythonpath = ["blackrock"]
+pythonpath = ["."]
 testpaths = ["tests"]
 
 [tool.coverage.run]
-source = ["blackrock"]
+source = ["eumos"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -34,7 +34,7 @@ exclude_lines = [
 
 [tool.setuptools]
 include-package-data = true
-packages = ["blackrock"]
+packages = ["eumos"]
 
 [tool.setuptools.package-data]
-blackrock = ["arch/**/*"]
+eumos = ["arch/**/*"]

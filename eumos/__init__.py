@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025-2026 Stuart Alldred. All Rights Reserved
 
-# This file marks the blackrock directory as a Python package.
+# This file marks the eumos directory as a Python package.
 
 __all__ = [
-    "Blackrock",
+    "Eumos",
     "load_all_csrs",
     "load_all_formats",
     "load_all_gprs",
@@ -20,8 +20,8 @@ __all__ = [
     "FieldDef",
 ]
 
-from .blackrock import Blackrock
 from .csr_loader import load_all_csrs
+from .eumos import Eumos
 from .format_loader import load_all_formats
 from .gpr_loader import load_all_gprs
 from .instruction_loader import load_all_instructions

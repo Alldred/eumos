@@ -3,21 +3,9 @@
 
 """Tests for instance.CSRContext and ISA (load instructions/CSRs separately or together, resolve_csr)."""
 
-from pathlib import Path
-
-import csr_loader
-import instruction_loader
-from decoder import Decoder
-from instance import ISA, CSRContext
-
-
-def _paths():
-    repo = Path(__file__).resolve().parent.parent
-    return {
-        "format_dir": repo / "yaml" / "rv64" / "formats",
-        "instr_root": repo / "yaml" / "rv64" / "instructions",
-        "csr_root": repo / "yaml" / "rv64" / "csrs",
-    }
+from eumos import csr_loader, instruction_loader
+from eumos.decoder import Decoder
+from eumos.instance import ISA, CSRContext
 
 
 def test_csr_context_set_get_by_address():
@@ -31,8 +19,7 @@ def test_csr_context_set_get_by_address():
 
 def test_csr_context_set_get_by_name_when_definitions_provided():
     """CSRContext resolves name to address when built with csr_defs."""
-    p = _paths()
-    csrs = csr_loader.load_all_csrs(str(p["csr_root"]))
+    csrs = csr_loader.load_all_csrs()
     ctx = CSRContext(csr_defs=csrs)
     ctx.set("mstatus", 0x88)
     assert ctx.get_value("mstatus") == 0x88
@@ -44,10 +31,7 @@ def test_csr_context_set_get_by_name_when_definitions_provided():
 
 def test_isa_instructions_only():
     """ISA can hold only instructions; csrs and csrs_by_address are None."""
-    p = _paths()
-    instrs = instruction_loader.load_all_instructions(
-        str(p["instr_root"]), str(p["format_dir"])
-    )
+    instrs = instruction_loader.load_all_instructions()
     isa = ISA(instructions=instrs)
     assert isa.instructions is not None
     assert len(isa.instructions) == 60
@@ -57,8 +41,7 @@ def test_isa_instructions_only():
 
 def test_isa_csrs_only():
     """ISA can hold only CSRs; instructions None, csrs_by_address populated."""
-    p = _paths()
-    csrs = csr_loader.load_all_csrs(str(p["csr_root"]))
+    csrs = csr_loader.load_all_csrs()
     isa = ISA(csrs=csrs)
     assert isa.instructions is None
     assert isa.csrs is not None
@@ -69,11 +52,8 @@ def test_isa_csrs_only():
 
 def test_isa_both_loaded():
     """ISA can hold both instructions and CSRs; csrs_by_address built from csrs."""
-    p = _paths()
-    instrs = instruction_loader.load_all_instructions(
-        str(p["instr_root"]), str(p["format_dir"])
-    )
-    csrs = csr_loader.load_all_csrs(str(p["csr_root"]))
+    instrs = instruction_loader.load_all_instructions()
+    csrs = csr_loader.load_all_csrs()
     isa = ISA(instructions=instrs, csrs=csrs)
     assert isa.instructions is not None
     assert isa.csrs is not None
@@ -83,11 +63,8 @@ def test_isa_both_loaded():
 
 def test_resolve_csr_decode_csrrw_then_resolve():
     """Decode a CSR instruction (csrrw), then resolve CSR def and value via ISA + CSRContext."""
-    p = _paths()
-    instrs = instruction_loader.load_all_instructions(
-        str(p["instr_root"]), str(p["format_dir"])
-    )
-    csrs = csr_loader.load_all_csrs(str(p["csr_root"]))
+    instrs = instruction_loader.load_all_instructions()
+    csrs = csr_loader.load_all_csrs()
     isa = ISA(instructions=instrs, csrs=csrs)
     dec = Decoder(instructions=isa.instructions)
     # csrrw rd, 0x341, rs1  -> CSRRW with imm=0x341 (mepc); opcode=0x73, funct3=1, rd, rs1, imm

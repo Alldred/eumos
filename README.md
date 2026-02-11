@@ -6,7 +6,7 @@
 <!-- SPDX-License-Identifier: MIT -->
 <!-- Copyright (c) 2026 Stuart Alldred. All Rights Reserved -->
 
-Blackrock is a Python-based machine-readable specification for RISC-V.
+Eumos is a Python-based machine-readable specification for RISC-V.
 
 ## Running
 
@@ -24,10 +24,10 @@ uv sync --extra dev
 
 ### Example usage
 
-To see how to use the instruction loader, run the example script:
+To see how to use the instruction loader, run the example script (use `uv run` so dependencies like PyYAML are available):
 
 ```bash
-python3 -m example.blackrock_example
+uv run python -m example.eumos_example
 ```
 
 This will load instructions from the built-in YAML files and print a summary.
@@ -47,7 +47,7 @@ Use `uv run pytest -v` for verbose, or `uv run pytest tests/test_instance.py` to
 Run tests with code coverage:
 
 ```bash
-uv run pytest --cov=blackrock --cov-report=term-missing
+uv run pytest --cov=eumos --cov-report=term-missing
 ```
 
 Add `--cov-report=html` to generate an HTML report in `htmlcov/`.
@@ -72,4 +72,4 @@ Add `--cov-report=html` to generate an HTML report in `htmlcov/`.
 
 All RISC-V YAML data and schema files are included in the package under the `arch/` directory. Loader functions always load from this built-in location; there is no support for user-specified data directories or environment variables. All schema and data files are included automatically via `pyproject.toml` and `MANIFEST.in`.
 
-If you install Blackrock as a package, all required data files are available and no additional configuration is needed.
+If you install Eumos as a package, all required data files are available and no additional configuration is needed.

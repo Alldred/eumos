@@ -2,18 +2,18 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2025 Stuart Alldred. All Rights Reserved
 
-# Check for BLACKROCK_ROOT already being set in the shell
-if [[ "$BLACKROCK_ROOT" != "" ]]; then
-    echo "[\033[0;31mERROR\033[0m] Blackrock shell is already activated!"
+# Check for EUMOS_ROOT already being set in the shell
+if [[ "$EUMOS_ROOT" != "" ]]; then
+    echo "[\033[0;31mERROR\033[0m] Eumos shell is already activated!"
     exit 1
 fi
 
 # Work out where the repository is located
-BLACKROCK_ROOT=$(readlink -f ${0:a:h}/..)
+EUMOS_ROOT=$(readlink -f ${0:a:h}/..)
 
 USER_HISTFILE=${HISTFILE:-$HOME/.zsh_history}
 
-BLACKROCK_ROOT=$BLACKROCK_ROOT \
+EUMOS_ROOT=$EUMOS_ROOT \
     USER_HISTFILE=$USER_HISTFILE \
-    ZDOTDIR=$BLACKROCK_ROOT/bin/zsh \
+    ZDOTDIR=$EUMOS_ROOT/bin/zsh \
     /bin/zsh -i $@

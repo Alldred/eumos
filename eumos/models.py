@@ -116,3 +116,10 @@ class CSRDef:
     reset_value: Optional[int] = None
     fields: Optional[Dict[str, CSRFieldDef]] = None
     source_file: Optional[str] = None
+
+
+# Aliases used by loaders
+CSR = CSRDef
+Format = FormatDef
+Instruction = InstructionDef
+GPR = GPRDef

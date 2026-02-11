@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
-# Jump to BLACKROCK_ROOT
-cd $BLACKROCK_ROOT
+# Jump to EUMOS_ROOT
+cd $EUMOS_ROOT
 
-# Custom prompt to make it clear this is the Blackrock environment
-PROMPT="[BR]:$PROMPT"
+# Custom prompt to make it clear this is the Eumos environment
+PROMPT="[EUMOS]:$PROMPT"
 
 # Inherit the user history location
 export HISTFILE=$USER_HISTFILE

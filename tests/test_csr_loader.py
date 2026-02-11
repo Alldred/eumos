@@ -1,24 +1,14 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
-"""Tests for csr_loader.load_csr and load_all_csrs."""
+"""Tests for csr_loader.load_all_csrs."""
 
-from pathlib import Path
-
-from blackrock import csr_loader, models
-
-
-def _paths():
-    repo = Path(__file__).resolve().parent.parent
-    return {
-        "csr_root": repo / "arch" / "rv64" / "csrs",
-        "mstatus_yml": repo / "arch" / "rv64" / "csrs" / "mstatus.yml",
-    }
+from eumos import csr_loader, models
 
 
 def test_load_csr_mstatus():
-    p = _paths()
-    csr = csr_loader.load_csr(str(p["mstatus_yml"]))
+    csrs = csr_loader.load_all_csrs()
+    csr = csrs["mstatus"]
     assert isinstance(csr, models.CSRDef)
     assert csr.name == "mstatus"
     assert csr.address == 0x300
@@ -31,8 +21,8 @@ def test_load_csr_mstatus():
 
 
 def test_load_csr_mstatus_has_fields():
-    p = _paths()
-    csr = csr_loader.load_csr(str(p["mstatus_yml"]))
+    csrs = csr_loader.load_all_csrs()
+    csr = csrs["mstatus"]
     assert csr.fields is not None
     assert "MIE" in csr.fields
     assert "MPIE" in csr.fields
@@ -52,8 +42,7 @@ def test_load_csr_mstatus_has_fields():
 
 
 def test_load_csr_mepc_has_reset_value_and_full_width_field():
-    p = _paths()
-    csrs = csr_loader.load_all_csrs(str(p["csr_root"]))
+    csrs = csr_loader.load_all_csrs()
     mepc = csrs["mepc"]
     assert mepc.reset_value == 0
     assert mepc.fields is not None
@@ -62,8 +51,7 @@ def test_load_csr_mepc_has_reset_value_and_full_width_field():
 
 
 def test_load_all_csrs_returns_dict():
-    p = _paths()
-    csrs = csr_loader.load_all_csrs(str(p["csr_root"]))
+    csrs = csr_loader.load_all_csrs()
     assert isinstance(csrs, dict)
     assert "mstatus" in csrs
     assert "mepc" in csrs

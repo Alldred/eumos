@@ -10,9 +10,9 @@ immediates, etc.).
 
 from typing import Any, Dict, Optional, Tuple
 
-from instance import InstructionInstance
-from instruction_loader import load_all_instructions
-from models import FieldEncoding, InstructionDef
+from .instance import InstructionInstance
+from .instruction_loader import load_all_instructions
+from .models import FieldEncoding, InstructionDef
 
 
 def _extract_bits(word: int, msb: int, lsb: int) -> int:

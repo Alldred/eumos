@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
-"""Blackrock main class and arch_root normalization."""
+"""Eumos main class and arch_root normalization."""
 
 from .csr_loader import load_all_csrs
 from .format_loader import load_all_formats
@@ -9,9 +9,9 @@ from .gpr_loader import load_all_gprs
 from .instruction_loader import load_all_instructions
 
 
-class Blackrock:
+class Eumos:
     """
-    Blackrock is the central class for loading and organizing RISC-V architecture data from YAML files.
+    Eumos is the central class for loading and organizing RISC-V architecture data from YAML files.
 
     Attributes:
         csrs (dict): Loaded Control and Status Registers.
@@ -20,15 +20,15 @@ class Blackrock:
         instructions (dict): Loaded instructions.
 
     Example:
-        br = Blackrock()
-        print(br.csrs)
-        print(br.gprs)
-        print(br.formats)
-        print(br.instructions)
+        eu = Eumos()
+        print(eu.csrs)
+        print(eu.gprs)
+        print(eu.formats)
+        print(eu.instructions)
     """
 
     def __init__(self):
-        """Initialize Blackrock and load all architecture data from built-in package paths."""
+        """Initialize Eumos and load all architecture data from built-in package paths."""
         self.csrs = self._sorted_dict(load_all_csrs())
         self.gprs = self._sorted_dict(load_all_gprs())
         self.formats = self._sorted_dict(load_all_formats())

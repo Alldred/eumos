@@ -1,19 +1,14 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
-"""Tests for format_loader.load_format."""
+"""Tests for format_loader.load_all_formats."""
 
-from pathlib import Path
-
-from blackrock import format_loader, models
-
-
-def _format_dir():
-    return Path(__file__).resolve().parent.parent / "arch" / "rv64" / "formats"
+from eumos import format_loader, models
 
 
 def test_load_format_i_returns_format_def():
-    fmt = format_loader.load_format(str(_format_dir()), "I")
+    formats = format_loader.load_all_formats()
+    fmt = formats["I"]
     assert isinstance(fmt, models.FormatDef)
     assert fmt.name == "I"
     assert fmt.fullname == "Immediate Type"
@@ -25,7 +20,8 @@ def test_load_format_i_returns_format_def():
 
 
 def test_load_format_s_has_split_imm_with_operand_bits():
-    fmt = format_loader.load_format(str(_format_dir()), "S")
+    formats = format_loader.load_all_formats()
+    fmt = formats["S"]
     imm = next(f for f in fmt.fields if f.name == "imm")
     assert imm.parts is not None
     assert len(imm.parts) >= 1
@@ -35,7 +31,8 @@ def test_load_format_s_has_split_imm_with_operand_bits():
 
 
 def test_load_format_b_has_split_imm_with_operand_bits():
-    fmt = format_loader.load_format(str(_format_dir()), "B")
+    formats = format_loader.load_all_formats()
+    fmt = formats["B"]
     imm = next(f for f in fmt.fields if f.name == "imm")
     assert imm.parts is not None
     assert len(imm.parts) >= 1
