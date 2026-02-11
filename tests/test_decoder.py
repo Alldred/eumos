@@ -3,32 +3,13 @@
 
 """Tests for decoder.Decoder and decode()."""
 
-from pathlib import Path
-
-from blackrock import instruction_loader
-from blackrock.decoder import Decoder, decode
-from blackrock.instance import InstructionInstance, RegisterContext
-
-
-def _paths():
-    repo = Path(__file__).resolve().parent.parent
-    return {
-        "format_dir": repo / "arch" / "rv64" / "formats",
-        "instr_root": repo / "arch" / "rv64" / "instructions",
-        "csr_root": repo / "arch" / "rv64" / "csrs",
-        "mstatus_yml": repo / "arch" / "rv64" / "csrs" / "mstatus.yml",
-        "addi_yml": repo / "arch" / "rv64" / "instructions" / "I" / "ADDI.yml",
-        "sd_yml": repo / "arch" / "rv64" / "instructions" / "I" / "SD.yml",
-        "ecall_yml": repo / "arch" / "rv64" / "instructions" / "I" / "ECALL.yml",
-        "gprs_yml": repo / "arch" / "rv64" / "gprs.yml",
-    }
+from eumos import instruction_loader
+from eumos.decoder import Decoder, decode
+from eumos.instance import InstructionInstance, RegisterContext
 
 
 def _decoder():
-    p = _paths()
-    instructions = instruction_loader.load_all_instructions(
-        str(p["instr_root"]), str(p["format_dir"])
-    )
+    instructions = instruction_loader.load_all_instructions()
     return Decoder(instructions=instructions)
 
 
@@ -94,10 +75,7 @@ def test_decode_unknown_returns_none():
 
 def test_decode_convenience_function():
     """decode() convenience function works with default instructions."""
-    p = _paths()
-    instructions = instruction_loader.load_all_instructions(
-        str(p["instr_root"]), str(p["format_dir"])
-    )
+    instructions = instruction_loader.load_all_instructions()
     word = 0x13 | (1 << 7) | (0 << 12) | (2 << 15) | (4 << 20)
     instance = decode(word, instructions=instructions)
     assert instance is not None

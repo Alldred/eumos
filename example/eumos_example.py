@@ -1,38 +1,38 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
-# Example usage of Blackrock class
+# Example usage of Eumos class
 
-from blackrock import Blackrock
+from eumos import Eumos
 
-# Instantiate Blackrock (requires $BLACKROCK_ROOT to be set in the environment)
-br = Blackrock()
+# Instantiate Eumos (requires $EUMOS_ROOT to be set in the environment)
+eu = Eumos()
 
-print("\n=== Blackrock Example Output ===\n")
+print("\n=== Eumos Example Output ===\n")
 
 # Access and print summary for GPRs
-print(f"Loaded {len(br.gprs)} GPRs.")
-example_gpr_idx, example_gpr = next(iter(br.gprs.items()))
+print(f"Loaded {len(eu.gprs)} GPRs.")
+example_gpr_idx, example_gpr = next(iter(eu.gprs.items()))
 print(
     f"Example GPR:\n  x{example_gpr_idx} ({example_gpr.abi_name})\n  reset_value: {example_gpr.reset_value}\n  access: {example_gpr.access}\n"
 )
 
-print(f"Loaded {len(br.csrs)} CSRs.")
-for csr_name, csr in sorted(br.csrs.items()):
+print(f"Loaded {len(eu.csrs)} CSRs.")
+for csr_name, csr in sorted(eu.csrs.items()):
     print(
         f"Example CSR:\n  {csr_name}\n  address: {csr.address}\n  privilege: {csr.privilege}\n"
     )
     break  # Show only the first CSR for brevity
 
-print(f"Loaded {len(br.formats)} instruction formats.")
-for fmt_name, fmt in sorted(br.formats.items()):
+print(f"Loaded {len(eu.formats)} instruction formats.")
+for fmt_name, fmt in sorted(eu.formats.items()):
     print(
         f"Example Format:\n  {fmt_name}\n  asm_format: {getattr(fmt, 'asm_format', None)}\n"
     )
     break  # Show only the first format for brevity
 
-print(f"Loaded {len(br.instructions)} instructions.")
-for name, details in sorted(br.instructions.items()):
+print(f"Loaded {len(eu.instructions)} instructions.")
+for name, details in sorted(eu.instructions.items()):
     print(f"Example Instruction:\n  {name}\n  Description: {details.description}\n")
     print(
         f"  Format: {details.format.asm_format if hasattr(details.format, 'asm_format') else details.format}"

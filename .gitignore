@@ -27,7 +27,7 @@ uv.lock
 *.swp
 *.swo
 
-# Blackrock
+# Eumos
 bin/zsh/
 
 # Ignore YAML backups

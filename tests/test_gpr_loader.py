@@ -1,23 +1,13 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
-"""Tests for gpr_loader.load_gprs."""
+"""Tests for gpr_loader.load_all_gprs."""
 
-from pathlib import Path
-
-from blackrock import gpr_loader, models
-
-
-def _paths():
-    repo = Path(__file__).resolve().parent.parent
-    return {
-        "gprs_yml": repo / "arch" / "rv64" / "gprs.yml",
-    }
+from eumos import gpr_loader, models
 
 
 def test_load_gprs_returns_dict():
-    p = _paths()
-    gprs = gpr_loader.load_gprs(str(p["gprs_yml"]))
+    gprs = gpr_loader.load_all_gprs()
     assert isinstance(gprs, dict)
     assert len(gprs) == 32
     for i in range(32):
@@ -25,8 +15,7 @@ def test_load_gprs_returns_dict():
 
 
 def test_load_gprs_x0_zero_read_only():
-    p = _paths()
-    gprs = gpr_loader.load_gprs(str(p["gprs_yml"]))
+    gprs = gpr_loader.load_all_gprs()
     g0 = gprs[0]
     assert isinstance(g0, models.GPRDef)
     assert g0.index == 0
@@ -36,8 +25,7 @@ def test_load_gprs_x0_zero_read_only():
 
 
 def test_load_gprs_x1_ra_read_write():
-    p = _paths()
-    gprs = gpr_loader.load_gprs(str(p["gprs_yml"]))
+    gprs = gpr_loader.load_all_gprs()
     g1 = gprs[1]
     assert g1.abi_name == "ra"
     assert g1.reset_value == 0
@@ -45,8 +33,7 @@ def test_load_gprs_x1_ra_read_write():
 
 
 def test_load_gprs_abi_names():
-    p = _paths()
-    gprs = gpr_loader.load_gprs(str(p["gprs_yml"]))
+    gprs = gpr_loader.load_all_gprs()
     expected = (
         "zero",
         "ra",

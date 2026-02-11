@@ -3,10 +3,8 @@
 
 """Tests for instance.InstructionInstance, RegisterContext, OperandInfo (operand-level combination)."""
 
-from pathlib import Path
-
-from blackrock import instruction_loader
-from blackrock.instance import (
+from eumos import instruction_loader
+from eumos.instance import (
     InstructionInstance,
     OperandInfo,
     RegisterContext,
@@ -14,20 +12,10 @@ from blackrock.instance import (
 )
 
 
-def _paths():
-    repo = Path(__file__).resolve().parent.parent
-    return {
-        "format_dir": repo / "arch" / "rv64" / "formats",
-        "addi_yml": repo / "arch" / "rv64" / "instructions" / "I" / "ADDI.yml",
-    }
-
-
 def test_storage_separate_isa_has_no_user_fields():
     """ISA types (InstructionDef, Operand) have no user data fields."""
-    p = _paths()
-    instr = instruction_loader.load_instruction(
-        str(p["addi_yml"]), str(p["format_dir"])
-    )
+    instrs = instruction_loader.load_all_instructions()
+    instr = instrs["addi"]
     assert hasattr(instr, "operands") and hasattr(instr, "fields")
     assert not hasattr(instr, "operand_values")
     op = instr.operands["rs1"]
@@ -38,10 +26,8 @@ def test_storage_separate_isa_has_no_user_fields():
 
 def test_get_operand_info_combines_isa_and_user():
     """get_operand_info returns OperandInfo with ISA (name, type, size, encoding) and user value."""
-    p = _paths()
-    instr = instruction_loader.load_instruction(
-        str(p["addi_yml"]), str(p["format_dir"])
-    )
+    instrs = instruction_loader.load_all_instructions()
+    instr = instrs["addi"]
     operand_values = {"rd": 3, "rs1": 1, "imm": 0x100}
     instance = InstructionInstance(instruction=instr, operand_values=operand_values)
     rs1 = instance.get_operand_info("rs1")
@@ -58,10 +44,8 @@ def test_get_operand_info_combines_isa_and_user():
 
 def test_get_operand_info_resolves_register_via_context():
     """For register operands, OperandInfo includes resolved_name and resolved_value from RegisterContext."""
-    p = _paths()
-    instr = instruction_loader.load_instruction(
-        str(p["addi_yml"]), str(p["format_dir"])
-    )
+    instrs = instruction_loader.load_all_instructions()
+    instr = instrs["addi"]
     operand_values = {"rd": 3, "rs1": 1, "imm": 0x100}
     regs = RegisterContext()
     regs.set(1, name="gp1", value=0x1234)
@@ -103,10 +87,8 @@ def test_register_context_set_accepts_index_or_name():
 
 def test_operands_yields_operand_info_per_operand():
     """operands() yields OperandInfo for each operand; combined view at operand level."""
-    p = _paths()
-    instr = instruction_loader.load_instruction(
-        str(p["addi_yml"]), str(p["format_dir"])
-    )
+    instrs = instruction_loader.load_all_instructions()
+    instr = instrs["addi"]
     operand_values = {"rd": 3, "rs1": 1, "imm": 0x100}
     instance = InstructionInstance(instruction=instr, operand_values=operand_values)
     infos = list(instance.operands())
@@ -121,10 +103,8 @@ def test_operands_yields_operand_info_per_operand():
 
 def test_instruction_only_isa_uses_instruction_def_operands():
     """Callers that only need ISA use InstructionDef.operands; no user data there."""
-    p = _paths()
-    instr = instruction_loader.load_instruction(
-        str(p["addi_yml"]), str(p["format_dir"])
-    )
+    instrs = instruction_loader.load_all_instructions()
+    instr = instrs["addi"]
     assert "rs1" in instr.operands
     assert instr.operands["rs1"].type == "register"
     assert instr.operands["rs1"].size == 5

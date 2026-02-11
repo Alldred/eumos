@@ -1,29 +1,14 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
-"""Tests for instruction_loader.load_instruction and load_all_instructions."""
+"""Tests for instruction_loader.load_all_instructions."""
 
-from pathlib import Path
-
-from blackrock import instruction_loader, models
-
-
-def _paths():
-    repo = Path(__file__).resolve().parent.parent
-    return {
-        "format_dir": repo / "arch" / "rv64" / "formats",
-        "instr_root": repo / "arch" / "rv64" / "instructions",
-        "addi_yml": repo / "arch" / "rv64" / "instructions" / "I" / "ADDI.yml",
-        "sd_yml": repo / "arch" / "rv64" / "instructions" / "I" / "SD.yml",
-        "ecall_yml": repo / "arch" / "rv64" / "instructions" / "I" / "ECALL.yml",
-    }
+from eumos import instruction_loader, models
 
 
 def test_load_instruction_addi():
-    p = _paths()
-    instr = instruction_loader.load_instruction(
-        str(p["addi_yml"]), str(p["format_dir"])
-    )
+    instrs = instruction_loader.load_all_instructions()
+    instr = instrs["addi"]
     assert isinstance(instr, models.InstructionDef)
     assert instr.mnemonic == "addi"
     assert instr.extension == "I"
@@ -39,8 +24,8 @@ def test_load_instruction_addi():
 
 
 def test_load_instruction_sd_has_split_imm():
-    p = _paths()
-    instr = instruction_loader.load_instruction(str(p["sd_yml"]), str(p["format_dir"]))
+    instrs = instruction_loader.load_all_instructions()
+    instr = instrs["sd"]
     assert instr.format.name == "S"
     assert "imm" in instr.fields
     assert instr.fields["imm"].parts is not None
@@ -48,20 +33,15 @@ def test_load_instruction_sd_has_split_imm():
 
 
 def test_load_instruction_ecall():
-    p = _paths()
-    instr = instruction_loader.load_instruction(
-        str(p["ecall_yml"]), str(p["format_dir"])
-    )
+    instrs = instruction_loader.load_all_instructions()
+    instr = instrs["ecall"]
     assert instr.imm == 0x0
     assert instr.inputs == []
     assert instr.extension == "I"
 
 
 def test_load_all_instructions_returns_dict():
-    p = _paths()
-    instrs = instruction_loader.load_all_instructions(
-        str(p["instr_root"]), str(p["format_dir"])
-    )
+    instrs = instruction_loader.load_all_instructions()
     assert isinstance(instrs, dict)
     assert len(instrs) == 60
     assert "addi" in instrs

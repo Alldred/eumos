@@ -9,7 +9,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, Iterator, Optional, Tuple, Union
 
-from models import CSRDef, FieldEncoding, GPRDef, InstructionDef, Operand
+from .models import CSRDef, FieldEncoding, GPRDef, InstructionDef, Operand
 
 # RISC-V GPR ABI names (x0..x31). s0/fp is canonical as s0.
 _GPR_ABI_NAMES = (
@@ -62,9 +62,9 @@ def get_gpr_def(reg_index: int) -> Optional[GPRDef]:
     global _GPR_DEFS
     if _GPR_DEFS is None:
         try:
-            import gpr_loader
+            from . import gpr_loader
 
-            _GPR_DEFS = gpr_loader.load_gprs()
+            _GPR_DEFS = gpr_loader.load_all_gprs()
         except Exception:
             _GPR_DEFS = {}
     if not (0 <= reg_index <= 31):
