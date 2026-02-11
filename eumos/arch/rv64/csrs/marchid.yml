@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: marchid
+address: 0xF12
+description: Architecture ID; read-only base architecture identifier.
+privilege: machine
+access: read-only
+width: 64
+extension: "Zicsr"
+reset_value: 0
+fields:
+  - name: value
+    bits: [63, 0]
+    description: Architecture ID value

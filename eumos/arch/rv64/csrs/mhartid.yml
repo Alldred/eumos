@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: mhartid
+address: 0xF14
+description: Hardware thread ID; read-only identifier for this hart.
+privilege: machine
+access: read-only
+width: 64
+extension: "Zicsr"
+reset_value: 0
+fields:
+  - name: value
+    bits: [63, 0]
+    description: Hardware thread (hart) ID
