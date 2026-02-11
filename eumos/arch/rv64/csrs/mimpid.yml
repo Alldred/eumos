@@ -6,10 +6,10 @@ address: 0xF13
 description: Implementation ID; read-only version of the processor implementation.
 privilege: machine
 access: read-only
-width: 32
+width: 64
 extension: "Zicsr"
 reset_value: 0
 fields:
   - name: value
-    bits: [31, 0]
+    bits: [63, 0]
     description: Implementation ID value
