@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+
+name: mimpid
+address: 0xF13
+description: Implementation ID; read-only version of the processor implementation.
+privilege: machine
+access: read-only
+width: 64
+extension: "Zicsr"
+reset_value: 0
+fields:
+  - name: value
+    bits: [63, 0]
+    description: Implementation ID value

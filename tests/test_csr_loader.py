@@ -60,4 +60,4 @@ def test_load_all_csrs_returns_dict():
     assert csrs["mstatus"].address == 0x300
     assert csrs["mepc"].address == 0x341
     assert csrs["mcause"].address == 0x342
-    assert len(csrs) == 12
+    assert len(csrs) == 16
