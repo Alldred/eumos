@@ -6,10 +6,10 @@ address: 0xF11
 description: Vendor ID; read-only identifier for the manufacturer.
 privilege: machine
 access: read-only
-width: 32
+width: 64
 extension: "Zicsr"
 reset_value: 0
 fields:
   - name: value
-    bits: [31, 0]
+    bits: [63, 0]
     description: Vendor ID value
