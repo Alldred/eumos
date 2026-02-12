@@ -70,7 +70,7 @@ def test_resolve_csr_decode_csrrw_then_resolve():
     # csrrw rd, 0x341, rs1  -> CSRRW with imm=0x341 (mepc); opcode=0x73, funct3=1, rd, rs1, imm
     # I-type: imm [31:20], rs1 [19:15], funct3 [14:12], rd [11:7], opcode [6:0]
     word = 0x73 | (1 << 7) | (1 << 12) | (2 << 15) | (0x341 << 20)
-    instance = dec.decode(word)
+    instance = dec.from_opc(word)
     assert instance is not None
     assert instance.instruction.mnemonic == "csrrw"
     assert instance.operand_values.get("imm") is not None

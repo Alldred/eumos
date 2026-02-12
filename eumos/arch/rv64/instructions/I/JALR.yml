@@ -4,6 +4,7 @@
 name: JALR
 mnemonic: jalr
 format: I
+asm_format: offset_base
 fixed_values:
   opcode: 0x67
   funct3: 0x0

@@ -106,7 +106,7 @@ def _lookup_key(
 
 
 class Decoder:
-    """Decodes 32-bit RISC-V instruction words into InstructionInstance using loaded InstructionDefs."""
+    """Decodes 32-bit RISC-V instruction words and assembly strings into InstructionInstance."""
 
     def __init__(
         self,
@@ -122,14 +122,14 @@ class Decoder:
             key = _lookup_key(instr)
             self._lookup[key] = instr
 
-    def decode(
+    def from_opc(
         self,
         word: int,
         *,
         register_context: Optional[Any] = None,
         pc: Optional[int] = None,
     ) -> Optional[InstructionInstance]:
-        """Decode a 32-bit instruction word into an InstructionInstance, or None if unknown.
+        """Decode a 32-bit instruction opcode into an InstructionInstance, or None if unknown.
 
         operand_values are filled from the encoding (rd, rs1, rs2, imm, etc.).
         Without register_context, GPR values are not populated (resolved_name/resolved_value
@@ -153,19 +153,130 @@ class Decoder:
             register_context=register_context,
             pc=pc,
         )
+    
+    def from_asm(
+        self,
+        asm_str: str,
+        *,
+        register_context: Optional[Any] = None,
+        pc: Optional[int] = None,
+    ) -> InstructionInstance:
+        """Parse an assembly string into an InstructionInstance.
+        
+        Args:
+            asm_str: The assembly string to parse (e.g., 'addi x1, x2, 4')
+            register_context: Optional register context
+            pc: Optional program counter
+        
+        Raises:
+            ValueError: If the instruction mnemonic is unknown or parse fails.
+        """
+        import re
+        
+        # Extract mnemonic from asm string
+        asm_mnemonic = asm_str.strip().split()[0].lower()
+        
+        # Lookup instruction
+        instruction = self._instructions.get(asm_mnemonic)
+        if instruction is None:
+            raise ValueError(f"Unknown instruction mnemonic: {asm_mnemonic}")
+        
+        fmt = instruction.format
+        asm_formats = getattr(fmt, 'asm_formats', None)
+        if not asm_formats:
+            raise ValueError(f"No asm_formats defined for format {fmt.name}")
+        
+        # Try each format entry until one matches
+        for format_name, fmt_entry in asm_formats.items():
+            operand_names = fmt_entry["operands"]
+            offset_base = fmt_entry.get("offset_base", False)
+            
+            if offset_base and len(operand_names) >= 2:
+                # Parse offset_base format: "mnemonic op1, offset(base)" or "mnemonic offset(base)"
+                # Build regex to match
+                if len(operand_names) > 2:
+                    # Has operands before offset(base)
+                    # e.g., "mnemonic rd, offset(base)"
+                    num_prefix = len(operand_names) - 2
+                    prefix_pattern = r",\s*".join([r"([^,\s()]+)"] * num_prefix)
+                    pattern = rf"^{re.escape(instruction.mnemonic)}\s+{prefix_pattern}\s*,\s*([^,\s()]+)\(([^)]+)\)$"
+                else:
+                    # Just offset(base)
+                    # e.g., "mnemonic offset(base)"
+                    pattern = rf"^{re.escape(instruction.mnemonic)}\s+([^,\s()]+)\(([^)]+)\)$"
+                
+                m = re.match(pattern, asm_str.strip())
+                if m:
+                    values = list(m.groups())
+                    # Map values to operand names
+                    operand_values = {}
+                    for i, op_name in enumerate(operand_names):
+                        val = values[i]
+                        op = instruction.operands.get(op_name)
+                        if op and op.type == "register":
+                            # Convert register name to index
+                            if val.startswith('x') and val[1:].isdigit():
+                                operand_values[op_name] = int(val[1:])
+                            else:
+                                # Try ABI name
+                                from .instance import _reg_to_index
+                                idx = _reg_to_index(val)
+                                if idx is not None:
+                                    operand_values[op_name] = idx
+                                else:
+                                    raise ValueError(f"Invalid register: {val}")
+                        elif op and op.type == "immediate":
+                            try:
+                                operand_values[op_name] = int(val, 0)
+                            except ValueError:
+                                raise ValueError(f"Invalid immediate: {val}")
+                        else:
+                            operand_values[op_name] = val
+                    
+                    return InstructionInstance(
+                        instruction=instruction,
+                        operand_values=operand_values,
+                        register_context=register_context,
+                        pc=pc,
+                    )
+            else:
+                # Standard comma-separated format
+                # Build regex to match operands
+                pattern = rf"^{re.escape(instruction.mnemonic)}\s+" + r",\s*".join([r"([^,\s()]+)"] * len(operand_names)) + r"$"
+                
+                m = re.match(pattern, asm_str.strip())
+                if m:
+                    values = list(m.groups())
+                    # Map values to operand names
+                    operand_values = {}
+                    for i, op_name in enumerate(operand_names):
+                        val = values[i]
+                        op = instruction.operands.get(op_name)
+                        if op and op.type == "register":
+                            # Convert register name to index
+                            if val.startswith('x') and val[1:].isdigit():
+                                operand_values[op_name] = int(val[1:])
+                            else:
+                                # Try ABI name
+                                from .instance import _reg_to_index
+                                idx = _reg_to_index(val)
+                                if idx is not None:
+                                    operand_values[op_name] = idx
+                                else:
+                                    raise ValueError(f"Invalid register: {val}")
+                        elif op and op.type == "immediate":
+                            try:
+                                operand_values[op_name] = int(val, 0)
+                            except ValueError:
+                                raise ValueError(f"Invalid immediate: {val}")
+                        else:
+                            operand_values[op_name] = val
+                    
+                    return InstructionInstance(
+                        instruction=instruction,
+                        operand_values=operand_values,
+                        register_context=register_context,
+                        pc=pc,
+                    )
 
-
-def decode(
-    word: int,
-    *,
-    instructions: Optional[Dict[str, InstructionDef]] = None,
-    register_context: Optional[Any] = None,
-    pc: Optional[int] = None,
-) -> Optional[InstructionInstance]:
-    """Decode a 32-bit instruction word into an InstructionInstance.
-
-    Convenience function that builds a Decoder with the given or default instructions.
-    Returns None if the instruction is not recognized.
-    """
-    dec = Decoder(instructions=instructions)
-    return dec.decode(word, register_context=register_context, pc=pc)
+        raise ValueError(f"Could not parse asm string '{asm_str}' for instruction {instruction.mnemonic}")

@@ -27,11 +27,11 @@ class FieldDef:
 
 @dataclass
 class FormatDef:
-    """Instruction format (R, I, S, B, etc.): name, asm_format string, and list of fields."""
+    """Instruction format (R, I, S, B, etc.): name, asm_formats (list of dicts), and list of fields."""
 
     name: str
     fullname: str
-    asm_format: str
+    asm_formats: list  # List[Dict[str, Any]]
     fields: List[FieldDef]
     description: str
 
@@ -77,6 +77,7 @@ class InstructionDef:
     operands: Dict[str, Operand] = field(default_factory=dict)
     fields: Dict[str, FieldEncoding] = field(default_factory=dict)
     extension: str = ""
+    asm_format: Optional[str] = None
     source_file: Optional[str] = None
 
 

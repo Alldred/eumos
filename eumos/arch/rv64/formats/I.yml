@@ -1,9 +1,15 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
+
 name: I
 fullname: Immediate Type
-asm_format: "{mnemonic} {rd}, {rs1}, {imm}"
+asm_formats:
+  standard:
+    operands: [rd, rs1, imm]  # Standard: addi rd, rs1, imm
+  offset_base:
+    operands: [rd, imm, rs1]  # Offset-base: lw rd, imm(rs1)
+    offset_base: true
 fields:
   - name: imm
     bits: [31,20]

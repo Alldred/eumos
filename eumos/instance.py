@@ -253,7 +253,129 @@ class ISA:
 
 @dataclass
 class InstructionInstance:
-    """One instance of an instruction with concrete operand values; ISA and user data kept separate, combined at operand level."""
+
+
+    def to_asm(self) -> str:
+        """Return the assembly string for this instruction instance."""
+        fmt = self.instruction.format
+        asm_formats = getattr(fmt, 'asm_formats', None)
+        if not asm_formats:
+            raise ValueError(f"No asm_formats defined for format {fmt.name}")
+        
+        # Use asm_format from instruction definition if specified
+        format_name = getattr(self.instruction, 'asm_format', None)
+        if format_name is None:
+            # Use first format (or 'default' if it exists)
+            format_name = 'default' if 'default' in asm_formats else next(iter(asm_formats))
+        
+        if format_name not in asm_formats:
+            raise ValueError(f"Unknown asm_format '{format_name}' for format {fmt.name}")
+        
+        fmt_entry = asm_formats[format_name]
+        operand_names = fmt_entry["operands"]
+        offset_base = fmt_entry.get("offset_base", False)
+        
+        # Build operand strings
+        operand_strs = []
+        for op_name in operand_names:
+            value = self.operand_values.get(op_name)
+            if value is None:
+                raise ValueError(f"Missing operand value for {op_name}")
+            op = self.instruction.operands.get(op_name)
+            if op and op.type == "register":
+                operand_strs.append(f"x{value}")
+            else:
+                operand_strs.append(str(value))
+        
+        # Format assembly string
+        mnemonic = self.instruction.mnemonic
+        if offset_base and len(operand_strs) >= 2:
+            # offset_base format: "mnemonic op1, imm(base)"
+            # Last two operands are offset and base
+            offset = operand_strs[-2]
+            base = operand_strs[-1]
+            rest = operand_strs[:-2]
+            if rest:
+                return f"{mnemonic} {', '.join(rest)}, {offset}({base})"
+            else:
+                return f"{mnemonic} {offset}({base})"
+        else:
+            # Standard comma-separated format
+            return f"{mnemonic} {', '.join(operand_strs)}"
+    
+    def asm(self) -> str:
+        """Alias for to_asm() for backwards compatibility."""
+        return self.to_asm()
+
+    def to_opc(self) -> int:
+        """Pack this instruction instance into a 32-bit opcode."""
+        word = 0
+        # First, encode fixed values (opcode, funct3, funct7, etc.)
+        for field_name, value in self.instruction.fixed_values.items():
+            encoding = self.instruction.fields.get(field_name)
+            if encoding and encoding.bits:
+                bits = encoding.bits
+                if len(bits) == 2:
+                    msb, lsb = bits
+                    mask = ((1 << (abs(msb - lsb) + 1)) - 1)
+                    word |= (value & mask) << lsb
+                else:
+                    word |= (value & 1) << bits[0]
+        
+        # Encode operand values
+        fmt_name = self.instruction.format.name
+        for op_name, op_value in self.operand_values.items():
+            encoding = self.instruction.fields.get(op_name)
+            if not encoding:
+                continue
+            
+            # Prepare the raw value to encode
+            raw_value = op_value
+            if encoding.type == "immediate":
+                # Undo sign extension and scaling for branch/jump
+                if fmt_name == "B":
+                    # 13-bit signed, scaled by 2
+                    raw_value = (op_value // 2) & 0x1FFF
+                elif fmt_name == "J":
+                    # 21-bit signed, scaled by 2
+                    raw_value = (op_value // 2) & 0x1FFFFF
+                elif fmt_name == "U":
+                    # 20-bit at [31:12], no scaling
+                    raw_value = op_value & 0xFFFFF
+                elif fmt_name in ("I", "S"):
+                    # 12-bit signed
+                    raw_value = op_value & 0xFFF
+            
+            # Encode into bit positions
+            if encoding.parts:
+                # Multi-part encoding (e.g., S-type, B-type, J-type immediates)
+                for part in encoding.parts:
+                    instr_bits = part.bits
+                    op_bits = part.operand_bits
+                    if op_bits and len(op_bits) == 2:
+                        op_msb, op_lsb = op_bits
+                        shift = min(op_msb, op_lsb)
+                        width = abs(op_msb - op_lsb) + 1
+                        piece = (raw_value >> shift) & ((1 << width) - 1)
+                    else:
+                        piece = raw_value & 1
+                    if len(instr_bits) == 2:
+                        msb, lsb = instr_bits
+                        word |= piece << lsb
+                    else:
+                        word |= piece << instr_bits[0]
+            elif encoding.bits:
+                # Simple contiguous encoding
+                bits = encoding.bits
+                if len(bits) == 2:
+                    msb, lsb = bits
+                    width = abs(msb - lsb) + 1
+                    mask = (1 << width) - 1
+                    word |= (raw_value & mask) << lsb
+                else:
+                    word |= (raw_value & 1) << bits[0]
+        
+        return word & 0xFFFFFFFF
 
     instruction: InstructionDef
     operand_values: Dict[str, Any] = field(default_factory=dict)

@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
-"""Tests for decoder.Decoder and decode()."""
+"""Tests for decoder.Decoder."""
 
 from eumos import instruction_loader
-from eumos.decoder import Decoder, decode
+from eumos.decoder import Decoder
 from eumos.instance import InstructionInstance, RegisterContext
 
 
@@ -18,7 +18,7 @@ def test_decode_addi_returns_instruction_instance():
     dec = _decoder()
     # addi x1, x2, 4  -> rd=1, rs1=2, imm=4, opcode=0x13, funct3=0
     word = 0x13 | (1 << 7) | (0 << 12) | (2 << 15) | (4 << 20)
-    instance = dec.decode(word)
+    instance = dec.from_opc(word)
     assert instance is not None
     assert isinstance(instance, InstructionInstance)
     assert instance.instruction.mnemonic == "addi"
@@ -33,7 +33,7 @@ def test_decode_addi_negative_immediate_sign_extended():
     dec = _decoder()
     # addi x0, x0, -1  -> imm 0xfff (12-bit -1)
     word = 0x13 | (0 << 7) | (0 << 12) | (0 << 15) | (0xFFF << 20)
-    instance = dec.decode(word)
+    instance = dec.from_opc(word)
     assert instance is not None
     assert instance.operand_values["imm"] == -1
 
@@ -43,7 +43,7 @@ def test_decode_sll_r_type():
     dec = _decoder()
     # sll x3, x4, x5  -> rd=3, rs1=4, rs2=5, opcode=0x33, funct3=1, funct7=0
     word = 0x33 | (3 << 7) | (1 << 12) | (4 << 15) | (5 << 20) | (0 << 25)
-    instance = dec.decode(word)
+    instance = dec.from_opc(word)
     assert instance is not None
     assert instance.instruction.mnemonic == "sll"
     assert instance.operand_values["rd"] == 3
@@ -57,7 +57,7 @@ def test_decode_sd_s_type_split_imm():
     # sd rs2=6, imm=8, rs1=7 -> opcode=0x23, funct3=3
     # imm: [31:25]=0, [11:7]=8 (low 5 bits of 8)
     word = 0x23 | (7 << 15) | (3 << 12) | (6 << 20) | (8 << 7)
-    instance = dec.decode(word)
+    instance = dec.from_opc(word)
     assert instance is not None
     assert instance.instruction.mnemonic == "sd"
     assert instance.operand_values["rs1"] == 7
@@ -69,24 +69,25 @@ def test_decode_unknown_returns_none():
     """Unknown opcode returns None."""
     dec = _decoder()
     word = 0xFFFFFFFF  # invalid / unimplemented
-    instance = dec.decode(word)
+    instance = dec.from_opc(word)
     assert instance is None
 
 
-def test_decode_convenience_function():
-    """decode() convenience function works with default instructions."""
+def test_from_opc_with_custom_instructions():
+    """Decoder.from_opc() works with custom instructions dict."""
     instructions = instruction_loader.load_all_instructions()
+    dec = Decoder(instructions=instructions)
     word = 0x13 | (1 << 7) | (0 << 12) | (2 << 15) | (4 << 20)
-    instance = decode(word, instructions=instructions)
+    instance = dec.from_opc(word)
     assert instance is not None
     assert instance.instruction.mnemonic == "addi"
 
 
-def test_decode_accepts_pc_and_register_context():
-    """decode() and Decoder.decode() accept optional pc and register_context."""
+def test_from_opc_accepts_pc_and_register_context():
+    """Decoder.from_opc() accepts optional pc and register_context."""
     dec = _decoder()
     word = 0x13 | (0 << 7) | (0 << 12) | (0 << 15) | (0 << 20)
-    instance = dec.decode(word, pc=0x1000)
+    instance = dec.from_opc(word, pc=0x1000)
     assert instance is not None
     assert instance.pc == 0x1000
     # register_context can be passed; without it resolved_* stay None
@@ -101,7 +102,7 @@ def test_register_decoder():
     regs = RegisterContext()
     regs.set(1, name="ra", value=0x1000)
     regs.set(2, name="sp", value=0x8000)
-    instance = dec.decode(word, register_context=regs)
+    instance = dec.from_opc(word, register_context=regs)
     assert instance is not None
     assert instance.register_context is regs
     rd_info = instance.get_operand_info("rd")

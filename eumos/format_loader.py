@@ -35,6 +35,7 @@ def _load_format(file_path: str, schema_path: str) -> Format:
             return FieldDef(**f)
 
         raw["fields"] = [_field_def_from_raw(f) for f in raw["fields"]]
+
     return Format(**raw)
 
 

@@ -1,9 +1,13 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred. All Rights Reserved
 
+
 name: S
 fullname: Store Type
-asm_format: "{mnemonic} {rs2}, {imm}({rs1})"
+asm_formats:
+  default:
+    operands: [rs2, imm, rs1]  # Store: sw rs2, imm(rs1)
+    offset_base: true
 fields:
   - name: imm
     type: immediate
