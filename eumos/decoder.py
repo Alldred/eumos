@@ -8,7 +8,7 @@ operand_values contain only what can be decoded from the instruction bits (regis
 immediates, etc.).
 """
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from .instance import InstructionInstance
 from .instruction_loader import load_all_instructions
@@ -141,7 +141,7 @@ class Decoder:
         ] = {}
         # Ambiguous lookup for instructions that share keys but differ by imm
         self._ambiguous_lookup: Dict[
-            Tuple[int, Optional[int], Optional[int]], list[InstructionDef]
+            Tuple[int, Optional[int], Optional[int]], List[InstructionDef]
         ] = {}
 
         for instr in self._instructions.values():
