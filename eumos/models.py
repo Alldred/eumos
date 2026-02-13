@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+# Copyright (c) 2026 Stuart Alldred.
 
 """Data structures for RISC-V instruction and format specs (ISA only; no file I/O)."""
 
@@ -27,11 +27,13 @@ class FieldDef:
 
 @dataclass
 class FormatDef:
-    """Instruction format (R, I, S, B, etc.): name, asm_format string, and list of fields."""
+    """Instruction format (R, I, S, B, etc.): name, asm_formats (dict mapping format names to specs), and list of fields."""
 
     name: str
     fullname: str
-    asm_format: str
+    asm_formats: Dict[
+        str, Dict[str, Any]
+    ]  # e.g., {"standard": {"operands": [...]}, "offset_base": {...}}
     fields: List[FieldDef]
     description: str
 
@@ -77,6 +79,7 @@ class InstructionDef:
     operands: Dict[str, Operand] = field(default_factory=dict)
     fields: Dict[str, FieldEncoding] = field(default_factory=dict)
     extension: str = ""
+    asm_format: Optional[str] = None
     source_file: Optional[str] = None
 
 

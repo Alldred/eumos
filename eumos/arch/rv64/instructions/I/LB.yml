@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+# Copyright (c) 2026 Stuart Alldred.
 
 name: LB
 mnemonic: lb
 format: I
+asm_format: offset_base
 fixed_values:
   opcode: 0x03
   funct3: 0x0

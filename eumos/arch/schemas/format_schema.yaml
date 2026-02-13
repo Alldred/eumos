@@ -1,11 +1,25 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+# Copyright (c) 2026 Stuart Alldred.
 
 type: map
 mapping:
   name: {type: str, required: true}
   fullname: {type: str, required: true}
-  asm_format: {type: str, required: true}
+  asm_formats:
+    type: map
+    required: true
+    mapping:
+      regex;(.*):
+        type: map
+        mapping:
+          operands:
+            type: seq
+            required: true
+            sequence:
+              - type: str
+          offset_base:
+            type: bool
+            required: false
   fields:
     type: seq
     required: true

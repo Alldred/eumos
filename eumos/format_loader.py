@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+# Copyright (c) 2026 Stuart Alldred.
 
 """Load RISC-V format YAML into Python objects."""
 
@@ -35,6 +35,7 @@ def _load_format(file_path: str, schema_path: str) -> Format:
             return FieldDef(**f)
 
         raw["fields"] = [_field_def_from_raw(f) for f in raw["fields"]]
+
     return Format(**raw)
 
 

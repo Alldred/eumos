@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+# Copyright (c) 2026 Stuart Alldred.
 
 """Decode a RISC-V instruction word into an InstructionInstance with operands filled from encoding.
 
@@ -8,7 +8,7 @@ operand_values contain only what can be decoded from the instruction bits (regis
 immediates, etc.).
 """
 
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from .instance import InstructionInstance
 from .instruction_loader import load_all_instructions
@@ -27,6 +27,26 @@ def _sign_extend(value: int, width: int) -> int:
     if value & sign_bit:
         return value - (1 << width)
     return value
+
+
+def _parse_register(val: str) -> int:
+    """Parse register name to index, validating 0..31 range.
+
+    Accepts 'xNN' or ABI names. Raises ValueError for invalid registers.
+    """
+    from .instance import _reg_to_index
+
+    if val.startswith("x") and val[1:].isdigit():
+        idx = int(val[1:])
+        if not 0 <= idx <= 31:
+            raise ValueError(f"Register index {idx} out of range (must be 0..31)")
+        return idx
+    else:
+        # Try ABI name
+        idx = _reg_to_index(val)
+        if idx is not None:
+            return idx
+        raise ValueError(f"Invalid register: {val}")
 
 
 def _extract_field_from_word(word: int, encoding: FieldEncoding) -> Optional[int]:
@@ -106,7 +126,7 @@ def _lookup_key(
 
 
 class Decoder:
-    """Decodes 32-bit RISC-V instruction words into InstructionInstance using loaded InstructionDefs."""
+    """Decodes 32-bit RISC-V instruction words and assembly strings into InstructionInstance."""
 
     def __init__(
         self,
@@ -115,21 +135,33 @@ class Decoder:
         if instructions is None:
             instructions = load_all_instructions()
         self._instructions = instructions
+        # Primary lookup by (opcode, funct3, funct7)
         self._lookup: Dict[
             Tuple[int, Optional[int], Optional[int]], InstructionDef
         ] = {}
+        # Ambiguous lookup for instructions that share keys but differ by imm
+        self._ambiguous_lookup: Dict[
+            Tuple[int, Optional[int], Optional[int]], List[InstructionDef]
+        ] = {}
+
         for instr in self._instructions.values():
             key = _lookup_key(instr)
-            self._lookup[key] = instr
+            if key in self._lookup:
+                # Multiple instructions share this key - store in ambiguous lookup
+                if key not in self._ambiguous_lookup:
+                    self._ambiguous_lookup[key] = [self._lookup[key]]
+                self._ambiguous_lookup[key].append(instr)
+            else:
+                self._lookup[key] = instr
 
-    def decode(
+    def from_opc(
         self,
         word: int,
         *,
         register_context: Optional[Any] = None,
         pc: Optional[int] = None,
     ) -> Optional[InstructionInstance]:
-        """Decode a 32-bit instruction word into an InstructionInstance, or None if unknown.
+        """Decode a 32-bit instruction opcode into an InstructionInstance, or None if unknown.
 
         operand_values are filled from the encoding (rd, rs1, rs2, imm, etc.).
         Without register_context, GPR values are not populated (resolved_name/resolved_value
@@ -139,11 +171,30 @@ class Decoder:
         opcode = _extract_bits(word, 6, 0)
         funct3 = _extract_bits(word, 14, 12)
         funct7 = _extract_bits(word, 31, 25)
+
+        # Try to find instruction with full match first
         instr = (
             self._lookup.get((opcode, funct3, funct7))
             or self._lookup.get((opcode, funct3, None))
             or self._lookup.get((opcode, None, None))
         )
+
+        # If we found a match, check if there are ambiguous alternatives
+        if instr is not None:
+            key = (opcode, funct3, None) if funct3 is not None else (opcode, None, None)
+            if key in self._ambiguous_lookup:
+                # Decode operand values to check immediate field for disambiguation
+                candidates = self._ambiguous_lookup[key]
+                for candidate in candidates:
+                    operand_values = _decode_operand_values(word, candidate)
+                    # Check if immediate matches the expected value in fixed_values
+                    if "imm" in candidate.fixed_values:
+                        expected_imm = candidate.fixed_values["imm"]
+                        decoded_imm = operand_values.get("imm")
+                        if decoded_imm == expected_imm:
+                            instr = candidate
+                            break
+
         if instr is None:
             return None
         operand_values = _decode_operand_values(word, instr)
@@ -154,18 +205,147 @@ class Decoder:
             pc=pc,
         )
 
+    def from_asm(
+        self,
+        asm_str: str,
+        *,
+        register_context: Optional[Any] = None,
+        pc: Optional[int] = None,
+    ) -> InstructionInstance:
+        """Parse an assembly string into an InstructionInstance.
 
-def decode(
-    word: int,
-    *,
-    instructions: Optional[Dict[str, InstructionDef]] = None,
-    register_context: Optional[Any] = None,
-    pc: Optional[int] = None,
-) -> Optional[InstructionInstance]:
-    """Decode a 32-bit instruction word into an InstructionInstance.
+        Args:
+            asm_str: The assembly string to parse (e.g., 'addi x1, x2, 4')
+            register_context: Optional register context
+            pc: Optional program counter
 
-    Convenience function that builds a Decoder with the given or default instructions.
-    Returns None if the instruction is not recognized.
-    """
-    dec = Decoder(instructions=instructions)
-    return dec.decode(word, register_context=register_context, pc=pc)
+        Raises:
+            ValueError: If the instruction mnemonic is unknown or parse fails.
+        """
+        import re
+
+        # Extract mnemonic from asm string
+        stripped = asm_str.strip()
+        if not stripped:
+            raise ValueError("Empty or whitespace-only assembly string")
+        asm_mnemonic = stripped.split()[0].lower()
+
+        # Lookup instruction
+        instruction = self._instructions.get(asm_mnemonic)
+        if instruction is None:
+            raise ValueError(f"Unknown instruction mnemonic: {asm_mnemonic}")
+
+        fmt = instruction.format
+        asm_formats = getattr(fmt, "asm_formats", None)
+        if not asm_formats:
+            raise ValueError(f"No asm_formats defined for format {fmt.name}")
+
+        # Determine which format(s) to try
+        # If instruction specifies asm_format, try that first, otherwise try all
+        instruction_format = getattr(instruction, "asm_format", None)
+        if instruction_format and instruction_format in asm_formats:
+            # Try configured format first, then fall back to others
+            format_order = [instruction_format] + [
+                k for k in asm_formats.keys() if k != instruction_format
+            ]
+        else:
+            # Try all formats in order
+            format_order = list(asm_formats.keys())
+
+        # Try each format entry until one matches
+        for format_name in format_order:
+            fmt_entry = asm_formats[format_name]
+            operand_names = fmt_entry["operands"]
+            offset_base = fmt_entry.get("offset_base", False)
+
+            # Handle zero-operand instructions (e.g., ecall, ebreak, mret)
+            if len(operand_names) == 0:
+                # Match just the mnemonic with optional surrounding whitespace
+                pattern = rf"^{re.escape(instruction.mnemonic)}$"
+                m = re.match(pattern, asm_str.strip(), flags=re.IGNORECASE)
+                if m:
+                    return InstructionInstance(
+                        instruction=instruction,
+                        operand_values={},
+                        register_context=register_context,
+                        pc=pc,
+                    )
+                continue
+
+            if offset_base and len(operand_names) >= 2:
+                # Parse offset_base format: "mnemonic op1, offset(base)" or "mnemonic offset(base)"
+                # Build regex to match
+                if len(operand_names) > 2:
+                    # Has operands before offset(base)
+                    # e.g., "mnemonic rd, offset(base)"
+                    num_prefix = len(operand_names) - 2
+                    prefix_pattern = r",\s*".join([r"([^,\s()]+)"] * num_prefix)
+                    pattern = rf"^{re.escape(instruction.mnemonic)}\s+{prefix_pattern}\s*,\s*([^,\s()]+)\(\s*([^)\s]+)\s*\)$"
+                else:
+                    # Just offset(base)
+                    # e.g., "mnemonic offset(base)"
+                    pattern = rf"^{re.escape(instruction.mnemonic)}\s+([^,\s()]+)\(\s*([^)\s]+)\s*\)$"
+
+                m = re.match(pattern, asm_str.strip(), flags=re.IGNORECASE)
+                if m:
+                    values = list(m.groups())
+                    # Map values to operand names
+                    operand_values = {}
+                    for i, op_name in enumerate(operand_names):
+                        val = values[i]
+                        op = instruction.operands.get(op_name)
+                        if op and op.type == "register":
+                            # Convert register name to index with validation
+                            operand_values[op_name] = _parse_register(val)
+                        elif op and op.type == "immediate":
+                            try:
+                                operand_values[op_name] = int(val, 0)
+                            except ValueError:
+                                raise ValueError(f"Invalid immediate: {val}")
+                        else:
+                            operand_values[op_name] = val
+
+                    return InstructionInstance(
+                        instruction=instruction,
+                        operand_values=operand_values,
+                        register_context=register_context,
+                        pc=pc,
+                    )
+            else:
+                # Standard comma-separated format
+                # Build regex to match operands
+                pattern = (
+                    rf"^{re.escape(instruction.mnemonic)}\s+"
+                    + r",\s*".join([r"([^,\s()]+)"] * len(operand_names))
+                    + r"$"
+                )
+
+                m = re.match(pattern, asm_str.strip(), flags=re.IGNORECASE)
+                if m:
+                    values = list(m.groups())
+                    # Map values to operand names
+                    operand_values = {}
+                    for i, op_name in enumerate(operand_names):
+                        val = values[i]
+                        op = instruction.operands.get(op_name)
+                        if op and op.type == "register":
+                            # Convert register name to index with validation
+                            operand_values[op_name] = _parse_register(val)
+                        elif op and op.type == "immediate":
+                            try:
+                                operand_values[op_name] = int(val, 0)
+                            except ValueError:
+                                raise ValueError(f"Invalid immediate: {val}")
+                        else:
+                            operand_values[op_name] = val
+
+                    return InstructionInstance(
+                        instruction=instruction,
+                        operand_values=operand_values,
+                        register_context=register_context,
+                        pc=pc,
+                    )
+
+        raise ValueError(
+            f"Could not parse asm string '{asm_str}' for instruction {instruction.mnemonic}"
+        )
