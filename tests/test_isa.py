@@ -1,7 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Stuart Alldred
-
-# SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred.
 
 """Tests for instance.CSRContext and ISA (load instructions/CSRs separately or together, resolve_csr)."""

@@ -1,7 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Stuart Alldred
-
-# SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred.
 
 """Decode a RISC-V instruction word into an InstructionInstance with operands filled from encoding.

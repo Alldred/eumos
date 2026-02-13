@@ -1,7 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Stuart Alldred
-
-# SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred.
 
 """Test round-trip: asm <-> instance <-> opcode for eumos."""

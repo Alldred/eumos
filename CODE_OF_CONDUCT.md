@@ -3,16 +3,6 @@
   ~ Copyright (c) 2026 Stuart Alldred.
   -->
 
-<!--
-  ~ SPDX-License-Identifier: MIT
-  ~ Copyright (c) 2026 Stuart Alldred
-  -->
-
-<!--
-  ~ SPDX-License-Identifier: MIT
-  ~ Copyright (c) 2025-2026 Stuart Alldred. All Rights Reserved
-  -->
-
 # Contributor Covenant Code of Conduct
 
 ## Our Pledge

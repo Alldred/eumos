@@ -1,7 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Stuart Alldred
-
-# SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred.
 
 """Data structures for RISC-V instruction and format specs (ISA only; no file I/O)."""
