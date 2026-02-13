@@ -1,4 +1,7 @@
 # SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred
+
+# SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred.
 
 
@@ -10,6 +13,8 @@ asm_formats:
   offset_base:
     operands: [rd, imm, rs1]  # Offset-base: lw rd, imm(rs1)
     offset_base: true
+  zero_operand:
+    operands: []  # Zero-operand: ecall, ebreak, mret
 fields:
   - name: imm
     bits: [31,20]

@@ -1,11 +1,15 @@
 # SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred
+
+# SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred.
 
 """Test auto-detection of instructions from asm strings."""
 
 import pytest
-from eumos.decoder import Decoder
+
 from eumos import instruction_loader
+from eumos.decoder import Decoder
 
 
 def test_from_asm_auto_detect():
@@ -24,7 +28,7 @@ def test_from_asm_auto_detect_with_instructions():
     """Test that from_asm can auto-detect when instructions dict is provided."""
     instructions = instruction_loader.load_all_instructions()
     decoder = Decoder(instructions=instructions)
-    
+
     instance = decoder.from_asm("sll x3, x4, x5")
     assert instance.instruction.mnemonic == "sll"
     assert instance.operand_values["rd"] == 3
@@ -43,7 +47,7 @@ def test_from_asm_explicit_instruction_still_works():
     """Test that decoder can parse any valid asm string."""
     instructions = instruction_loader.load_all_instructions()
     decoder = Decoder(instructions=instructions)
-    
+
     instance = decoder.from_asm("addi x1, x2, 4")
     assert instance.instruction.mnemonic == "addi"
     assert instance.operand_values["rd"] == 1

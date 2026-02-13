@@ -1,4 +1,7 @@
 # SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred
+
+# SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred.
 
 """Load RISC-V CSR YAML into Python objects."""

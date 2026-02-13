@@ -1,9 +1,13 @@
 # SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred
+
+# SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred.
 
 name: EBREAK
 mnemonic: ebreak
 format: I
+asm_format: zero_operand
 fixed_values:
   opcode: 0x73
   funct3: 0x0

@@ -1,4 +1,7 @@
 # SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred
+
+# SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred.
 
 """Tests for instruction_loader.load_all_instructions."""

@@ -1,7 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Noodle-Bytes. All Rights Reserved
-
-# SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred.
 
 """User data layered on ISA: instruction instances, register context, and operand-level combined view."""
@@ -255,27 +252,34 @@ class ISA:
 class InstructionInstance:
     """Concrete decoded instruction instance with bound operand values and related metadata."""
 
-
     def to_asm(self) -> str:
         """Return the assembly string for this instruction instance."""
         fmt = self.instruction.format
-        asm_formats = getattr(fmt, 'asm_formats', None)
+        asm_formats = getattr(fmt, "asm_formats", None)
         if not asm_formats:
             raise ValueError(f"No asm_formats defined for format {fmt.name}")
-        
+
         # Use asm_format from instruction definition if specified
-        format_name = getattr(self.instruction, 'asm_format', None)
+        format_name = getattr(self.instruction, "asm_format", None)
         if format_name is None:
-            # Use first format (or 'default' if it exists)
-            format_name = 'default' if 'default' in asm_formats else next(iter(asm_formats))
-        
+            # Prefer well-known keys for deterministic fallback
+            if "default" in asm_formats:
+                format_name = "default"
+            elif "standard" in asm_formats:
+                format_name = "standard"
+            else:
+                # Last resort: use any available format
+                format_name = next(iter(asm_formats))
+
         if format_name not in asm_formats:
-            raise ValueError(f"Unknown asm_format '{format_name}' for format {fmt.name}")
-        
+            raise ValueError(
+                f"Unknown asm_format '{format_name}' for format {fmt.name}"
+            )
+
         fmt_entry = asm_formats[format_name]
         operand_names = fmt_entry["operands"]
         offset_base = fmt_entry.get("offset_base", False)
-        
+
         # Build operand strings
         operand_strs = []
         for op_name in operand_names:
@@ -287,9 +291,14 @@ class InstructionInstance:
                 operand_strs.append(f"x{value}")
             else:
                 operand_strs.append(str(value))
-        
+
         # Format assembly string
         mnemonic = self.instruction.mnemonic
+
+        # Handle zero-operand instructions
+        if len(operand_strs) == 0:
+            return mnemonic
+
         if offset_base and len(operand_strs) >= 2:
             # offset_base format: "mnemonic op1, imm(base)"
             # Last two operands are offset and base
@@ -303,7 +312,7 @@ class InstructionInstance:
         else:
             # Standard comma-separated format
             return f"{mnemonic} {', '.join(operand_strs)}"
-    
+
     def asm(self) -> str:
         """Alias for to_asm() for backwards compatibility."""
         return self.to_asm()
@@ -318,18 +327,18 @@ class InstructionInstance:
                 bits = encoding.bits
                 if len(bits) == 2:
                     msb, lsb = bits
-                    mask = ((1 << (abs(msb - lsb) + 1)) - 1)
+                    mask = (1 << (abs(msb - lsb) + 1)) - 1
                     word |= (value & mask) << lsb
                 else:
                     word |= (value & 1) << bits[0]
-        
+
         # Encode operand values
         fmt_name = self.instruction.format.name
         for op_name, op_value in self.operand_values.items():
             encoding = self.instruction.fields.get(op_name)
             if not encoding:
                 continue
-            
+
             # Prepare the raw value to encode
             raw_value = op_value
             if encoding.type == "immediate":
@@ -337,12 +346,16 @@ class InstructionInstance:
                 if fmt_name == "B":
                     # 13-bit signed, scaled by 2; require 2-byte alignment
                     if op_value % 2 != 0:
-                        raise ValueError(f"B-type immediate offset {op_value} is not 2-byte aligned and cannot be encoded")
+                        raise ValueError(
+                            f"B-type immediate offset {op_value} is not 2-byte aligned and cannot be encoded"
+                        )
                     raw_value = (op_value // 2) & 0x1FFF
                 elif fmt_name == "J":
                     # 21-bit signed, scaled by 2; require 2-byte alignment
                     if op_value % 2 != 0:
-                        raise ValueError(f"J-type immediate offset {op_value} is not 2-byte aligned and cannot be encoded")
+                        raise ValueError(
+                            f"J-type immediate offset {op_value} is not 2-byte aligned and cannot be encoded"
+                        )
                     raw_value = (op_value // 2) & 0x1FFFFF
                 elif fmt_name == "U":
                     # 20-bit at [31:12], no scaling
@@ -350,7 +363,7 @@ class InstructionInstance:
                 elif fmt_name in ("I", "S"):
                     # 12-bit signed
                     raw_value = op_value & 0xFFF
-            
+
             # Encode into bit positions
             if encoding.parts:
                 # Multi-part encoding (e.g., S-type, B-type, J-type immediates)
@@ -379,7 +392,7 @@ class InstructionInstance:
                     word |= (raw_value & mask) << lsb
                 else:
                     word |= (raw_value & 1) << bits[0]
-        
+
         return word & 0xFFFFFFFF
 
     instruction: InstructionDef
