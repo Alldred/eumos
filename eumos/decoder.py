@@ -29,6 +29,26 @@ def _sign_extend(value: int, width: int) -> int:
     return value
 
 
+def _parse_register(val: str) -> int:
+    """Parse register name to index, validating 0..31 range.
+
+    Accepts 'xNN' or ABI names. Raises ValueError for invalid registers.
+    """
+    from .instance import _reg_to_index
+
+    if val.startswith("x") and val[1:].isdigit():
+        idx = int(val[1:])
+        if not 0 <= idx <= 31:
+            raise ValueError(f"Register index {idx} out of range (must be 0..31)")
+        return idx
+    else:
+        # Try ABI name
+        idx = _reg_to_index(val)
+        if idx is not None:
+            return idx
+        raise ValueError(f"Invalid register: {val}")
+
+
 def _extract_field_from_word(word: int, encoding: FieldEncoding) -> Optional[int]:
     """Extract one field value from the instruction word using its encoding."""
     if encoding.parts:
@@ -115,12 +135,24 @@ class Decoder:
         if instructions is None:
             instructions = load_all_instructions()
         self._instructions = instructions
+        # Primary lookup by (opcode, funct3, funct7)
         self._lookup: Dict[
             Tuple[int, Optional[int], Optional[int]], InstructionDef
         ] = {}
+        # Ambiguous lookup for instructions that share keys but differ by imm
+        self._ambiguous_lookup: Dict[
+            Tuple[int, Optional[int], Optional[int]], list[InstructionDef]
+        ] = {}
+
         for instr in self._instructions.values():
             key = _lookup_key(instr)
-            self._lookup[key] = instr
+            if key in self._lookup:
+                # Multiple instructions share this key - store in ambiguous lookup
+                if key not in self._ambiguous_lookup:
+                    self._ambiguous_lookup[key] = [self._lookup[key]]
+                self._ambiguous_lookup[key].append(instr)
+            else:
+                self._lookup[key] = instr
 
     def from_opc(
         self,
@@ -139,11 +171,30 @@ class Decoder:
         opcode = _extract_bits(word, 6, 0)
         funct3 = _extract_bits(word, 14, 12)
         funct7 = _extract_bits(word, 31, 25)
+
+        # Try to find instruction with full match first
         instr = (
             self._lookup.get((opcode, funct3, funct7))
             or self._lookup.get((opcode, funct3, None))
             or self._lookup.get((opcode, None, None))
         )
+
+        # If we found a match, check if there are ambiguous alternatives
+        if instr is not None:
+            key = (opcode, funct3, None) if funct3 is not None else (opcode, None, None)
+            if key in self._ambiguous_lookup:
+                # Decode operand values to check immediate field for disambiguation
+                candidates = self._ambiguous_lookup[key]
+                for candidate in candidates:
+                    operand_values = _decode_operand_values(word, candidate)
+                    # Check if immediate matches the expected value in fixed_values
+                    if "imm" in candidate.fixed_values:
+                        expected_imm = candidate.fixed_values["imm"]
+                        decoded_imm = operand_values.get("imm")
+                        if decoded_imm == expected_imm:
+                            instr = candidate
+                            break
+
         if instr is None:
             return None
         operand_values = _decode_operand_values(word, instr)
@@ -244,18 +295,8 @@ class Decoder:
                         val = values[i]
                         op = instruction.operands.get(op_name)
                         if op and op.type == "register":
-                            # Convert register name to index
-                            if val.startswith("x") and val[1:].isdigit():
-                                operand_values[op_name] = int(val[1:])
-                            else:
-                                # Try ABI name
-                                from .instance import _reg_to_index
-
-                                idx = _reg_to_index(val)
-                                if idx is not None:
-                                    operand_values[op_name] = idx
-                                else:
-                                    raise ValueError(f"Invalid register: {val}")
+                            # Convert register name to index with validation
+                            operand_values[op_name] = _parse_register(val)
                         elif op and op.type == "immediate":
                             try:
                                 operand_values[op_name] = int(val, 0)
@@ -288,18 +329,8 @@ class Decoder:
                         val = values[i]
                         op = instruction.operands.get(op_name)
                         if op and op.type == "register":
-                            # Convert register name to index
-                            if val.startswith("x") and val[1:].isdigit():
-                                operand_values[op_name] = int(val[1:])
-                            else:
-                                # Try ABI name
-                                from .instance import _reg_to_index
-
-                                idx = _reg_to_index(val)
-                                if idx is not None:
-                                    operand_values[op_name] = idx
-                                else:
-                                    raise ValueError(f"Invalid register: {val}")
+                            # Convert register name to index with validation
+                            operand_values[op_name] = _parse_register(val)
                         elif op and op.type == "immediate":
                             try:
                                 operand_values[op_name] = int(val, 0)

@@ -346,6 +346,13 @@ class InstructionInstance:
             if not encoding:
                 continue
 
+            # Validate register operands
+            if encoding.type == "register":
+                if not isinstance(op_value, int) or not 0 <= op_value <= 31:
+                    raise ValueError(
+                        f"Register operand '{op_name}' has invalid value {op_value} (must be 0..31)"
+                    )
+
             # Prepare the raw value to encode
             raw_value = op_value
             if encoding.type == "immediate":
