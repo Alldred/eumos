@@ -3,19 +3,6 @@
   ~ Copyright (c) 2026 Stuart Alldred.
   -->
 
-<!--
-  ~ SPDX-License-Identifier: MIT
-  ~ Copyright (c) 2026 Stuart Alldred
-  -->
-
-<!--
-  ~ SPDX-License-Identifier: MIT
-  ~ Copyright (c) 2026 Stuart Alldred. All Rights Reserved
-  -->
-
-<!-- SPDX-License-Identifier: MIT -->
-<!-- Copyright (c) 2026 Stuart Alldred. All Rights Reserved -->
-
 Eumos is a Python-based machine-readable specification for RISC-V.
 
 ## Running
