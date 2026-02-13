@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+# Copyright (c) 2026 Stuart Alldred.
 
 """Decode a RISC-V instruction word into an InstructionInstance with operands filled from encoding.
 
@@ -174,7 +174,10 @@ class Decoder:
         import re
         
         # Extract mnemonic from asm string
-        asm_mnemonic = asm_str.strip().split()[0].lower()
+        stripped = asm_str.strip()
+        if not stripped:
+            raise ValueError("Empty or whitespace-only assembly string")
+        asm_mnemonic = stripped.split()[0].lower()
         
         # Lookup instruction
         instruction = self._instructions.get(asm_mnemonic)
@@ -199,13 +202,13 @@ class Decoder:
                     # e.g., "mnemonic rd, offset(base)"
                     num_prefix = len(operand_names) - 2
                     prefix_pattern = r",\s*".join([r"([^,\s()]+)"] * num_prefix)
-                    pattern = rf"^{re.escape(instruction.mnemonic)}\s+{prefix_pattern}\s*,\s*([^,\s()]+)\(([^)]+)\)$"
+                    pattern = rf"^{re.escape(instruction.mnemonic)}\s+{prefix_pattern}\s*,\s*([^,\s()]+)\(\s*([^)\s]+)\s*\)$"
                 else:
                     # Just offset(base)
                     # e.g., "mnemonic offset(base)"
-                    pattern = rf"^{re.escape(instruction.mnemonic)}\s+([^,\s()]+)\(([^)]+)\)$"
+                    pattern = rf"^{re.escape(instruction.mnemonic)}\s+([^,\s()]+)\(\s*([^)\s]+)\s*\)$"
                 
-                m = re.match(pattern, asm_str.strip())
+                m = re.match(pattern, asm_str.strip(), flags=re.IGNORECASE)
                 if m:
                     values = list(m.groups())
                     # Map values to operand names
@@ -244,7 +247,7 @@ class Decoder:
                 # Build regex to match operands
                 pattern = rf"^{re.escape(instruction.mnemonic)}\s+" + r",\s*".join([r"([^,\s()]+)"] * len(operand_names)) + r"$"
                 
-                m = re.match(pattern, asm_str.strip())
+                m = re.match(pattern, asm_str.strip(), flags=re.IGNORECASE)
                 if m:
                     values = list(m.groups())
                     # Map values to operand names

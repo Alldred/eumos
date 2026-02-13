@@ -1,15 +1,14 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+# Copyright (c) 2026 Stuart Alldred.
 
 """Test Decoder API methods: from_opc and from_asm."""
 
 import pytest
-from eumos import instruction_loader
 from eumos.decoder import Decoder
 
 
 def test_decoder_from_opc():
-    """Test that Decoder.from_opc() works as alias for decode()."""
+    """Test that Decoder.from_opc() decodes an opcode into an instruction instance."""
     decoder = Decoder()
     opcode = 0x00410093  # addi x1, x2, 4
     

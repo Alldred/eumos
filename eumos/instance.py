@@ -2,7 +2,7 @@
 # Copyright (c) 2026 Noodle-Bytes. All Rights Reserved
 
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+# Copyright (c) 2026 Stuart Alldred.
 
 """User data layered on ISA: instruction instances, register context, and operand-level combined view."""
 
@@ -253,6 +253,7 @@ class ISA:
 
 @dataclass
 class InstructionInstance:
+    """Concrete decoded instruction instance with bound operand values and related metadata."""
 
 
     def to_asm(self) -> str:
@@ -334,10 +335,14 @@ class InstructionInstance:
             if encoding.type == "immediate":
                 # Undo sign extension and scaling for branch/jump
                 if fmt_name == "B":
-                    # 13-bit signed, scaled by 2
+                    # 13-bit signed, scaled by 2; require 2-byte alignment
+                    if op_value % 2 != 0:
+                        raise ValueError(f"B-type immediate offset {op_value} is not 2-byte aligned and cannot be encoded")
                     raw_value = (op_value // 2) & 0x1FFF
                 elif fmt_name == "J":
-                    # 21-bit signed, scaled by 2
+                    # 21-bit signed, scaled by 2; require 2-byte alignment
+                    if op_value % 2 != 0:
+                        raise ValueError(f"J-type immediate offset {op_value} is not 2-byte aligned and cannot be encoded")
                     raw_value = (op_value // 2) & 0x1FFFFF
                 elif fmt_name == "U":
                     # 20-bit at [31:12], no scaling

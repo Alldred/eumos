@@ -56,9 +56,9 @@ Add `--cov-report=html` to generate an HTML report in `htmlcov/`.
 
 - **load_all_instructions()** returns a dict: mnemonic (e.g. `"addi"`, `"sd"`) -> **Instruction**.
 - Each **Instruction** has: `name`, `mnemonic`, `format` (a **Format**), `operands` (name -> **Operand**), `fields` (name -> **FieldEncoding**), `inputs` (ordered list), `fixed_values` (opcode, funct3, funct7), `imm`, `description`, and `extension`.
-- **Format** has `asm_formats` (list of assembly patterns like `"{mnemonic} {rd:reg}, {rs1:reg}, {imm:imm}"`) and `fields` (list of **FieldDef**). Encoding bit ranges come from `fields`; for split immediates (S/B type), use `parts[].bits` and `parts[].operand_bits`.
+- **Format** has `asm_formats` (dict mapping format names like `"standard"` and `"offset_base"` to assembly specs with `operands` list) and `fields` (list of **FieldDef**). Encoding bit ranges come from `fields`; for split immediates (S/B type), use `parts[].bits` and `parts[].operand_bits`.
 - For user data (concrete operand values, register names/values), use **InstructionInstance** and **RegisterContext** from `instance`; `get_operand_info(name)` returns **OperandInfo**, which combines ISA and user data per operand.
-- **Decoder**: use `decoder.from_opc(word)` to decode a 32-bit instruction opcode into an **InstructionInstance** with `instruction` and `operand_values` filled from the encoding (rd, rs1, rs2, imm, etc.). Use `decoder.from_asm(asm_str)` to parse assembly strings. Without a **RegisterContext**, GPR values and resolved names are not populated; only what can be decoded from the bits is set.
+- **Decoder**: use `Decoder().from_opc(word)` to decode a 32-bit instruction opcode into an **InstructionInstance** with `instruction` and `operand_values` filled from the encoding (rd, rs1, rs2, imm, etc.). Use `Decoder().from_asm(asm_str)` to parse assembly strings. Without a **RegisterContext**, GPR values and resolved names are not populated; only what can be decoded from the bits is set.
 
 ## CSRs
 
