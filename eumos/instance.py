@@ -250,7 +250,14 @@ class ISA:
 
 @dataclass
 class InstructionInstance:
-    """Concrete decoded instruction instance with bound operand values and related metadata."""
+    """Concrete decoded instruction instance with bound operand values and related metadata.
+
+    Attributes:
+        instruction: The instruction definition from the ISA
+        operand_values: Dict mapping operand names to their runtime values
+        register_context: Optional register context for resolving register names/values
+        pc: Optional program counter value
+    """
 
     def to_asm(self) -> str:
         """Return the assembly string for this instruction instance."""
