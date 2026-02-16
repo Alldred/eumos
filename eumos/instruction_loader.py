@@ -69,6 +69,11 @@ def _load_instruction(
             raise ValueError(
                 f"{file_path}: asm_format '{asm_format}' not in format {format_name} asm_formats {list(asm_formats)}"
             )
+    # Expose fixed imm as top-level imm when present (e.g. ECALL has imm in fixed_values only)
+    if "imm" not in raw and raw.get("fixed_values"):
+        fv_imm = raw["fixed_values"].get("imm")
+        if fv_imm is not None:
+            raw["imm"] = fv_imm
     return Instruction(**raw)
 
 

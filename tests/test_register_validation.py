@@ -123,7 +123,7 @@ def test_invalid_register_in_to_opc():
     # Manually set an invalid register value
     instance.operand_values["rd"] = 32  # Out of range
 
-    with pytest.raises(ValueError, match="Register operand 'rd' has invalid value 32"):
+    with pytest.raises(ValueError, match="Register index out of range 0..31: 32"):
         instance.to_opc()
 
 
@@ -135,7 +135,7 @@ def test_invalid_register_negative():
     instance = decoder.from_asm("add x1, x2, x3")
     instance.operand_values["rs1"] = -1  # Invalid
 
-    with pytest.raises(ValueError, match="Register operand 'rs1' has invalid value -1"):
+    with pytest.raises(ValueError, match="Register index out of range 0..31: -1"):
         instance.to_opc()
 
 

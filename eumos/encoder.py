@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2026 Stuart Alldred. All Rights Reserved
+# Copyright (c) 2026 Stuart Alldred.
 
 """Encode instruction operand values into a 32-bit RISC-V opcode."""
 
@@ -31,12 +31,29 @@ def _immediate_to_raw(value: int, format_name: str) -> int:
     return value & 0xFFF
 
 
-def _encode_field_value(
-    value: Any, encoding: FieldEncoding, format_name: str
-) -> int:
+def _encode_field_value(value: Any, encoding: FieldEncoding, format_name: str) -> int:
     """Encode one field value into raw bits for insertion."""
     if encoding.type == "immediate":
-        raw = _immediate_to_raw(int(value), format_name)
+        val = int(value)
+        if format_name == "B":
+            if val % 2 != 0:
+                raise ValueError(
+                    f"B-type immediate offset {val} is not 2-byte aligned and cannot be encoded"
+                )
+        elif format_name == "J":
+            if val % 2 != 0:
+                raise ValueError(
+                    f"J-type immediate offset {val} is not 2-byte aligned and cannot be encoded"
+                )
+        raw = _immediate_to_raw(val, format_name)
+    elif encoding.type == "register":
+        if not isinstance(value, int):
+            raise ValueError(
+                f"Register operand must be int, got {type(value).__name__}"
+            )
+        if not 0 <= value <= 31:
+            raise ValueError(f"Register index out of range 0..31: {value}")
+        raw = value
     else:
         raw = int(value)
 
