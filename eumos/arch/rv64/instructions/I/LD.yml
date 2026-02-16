@@ -13,6 +13,11 @@ inputs:
   - rs1
   - imm
 extension: "I"
+access_width: 64
+exceptions:
+  - LOAD_ADDRESS_MISALIGNED
+  - LOAD_ACCESS_FAULT
+  - LOAD_PAGE_FAULT
 description: |
   LD loads a doubleword from memory and stores it in rd.
   rd = MEM[rs1 + imm]

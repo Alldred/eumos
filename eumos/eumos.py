@@ -4,6 +4,7 @@
 """Eumos main class and arch_root normalization."""
 
 from .csr_loader import load_all_csrs
+from .exception_loader import load_all_exception_causes
 from .format_loader import load_all_formats
 from .gpr_loader import load_all_gprs
 from .instruction_loader import load_all_instructions
@@ -15,6 +16,7 @@ class Eumos:
 
     Attributes:
         csrs (dict): Loaded Control and Status Registers.
+        exception_causes (dict): Loaded exception cause definitions (code -> ExceptionCauseDef).
         gprs (dict): Loaded General Purpose Registers.
         formats (dict): Loaded instruction formats.
         instructions (dict): Loaded instructions.
@@ -30,6 +32,7 @@ class Eumos:
     def __init__(self):
         """Initialize Eumos and load all architecture data from built-in package paths."""
         self.csrs = self._sorted_dict(load_all_csrs())
+        self.exception_causes = load_all_exception_causes()
         self.gprs = self._sorted_dict(load_all_gprs())
         self.formats = self._sorted_dict(load_all_formats())
         self.instructions = self._sorted_dict(load_all_instructions())
@@ -41,6 +44,7 @@ class Eumos:
 
     def reload(self):
         self.csrs = load_all_csrs()
+        self.exception_causes = load_all_exception_causes()
         self.gprs = load_all_gprs()
         self.formats = load_all_formats()
         self.instructions = load_all_instructions()

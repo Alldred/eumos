@@ -39,6 +39,15 @@ class FormatDef:
 
 
 @dataclass
+class ExceptionCauseDef:
+    """RISC-V trap/exception cause: code, human name, and identifier."""
+
+    code: int
+    name: str
+    identifier: str  # UPPERCASE_SNAKE for logging
+
+
+@dataclass
 class Operand:
     """Operand spec: name, type (register/immediate/etc), size in bits, optional fixed data."""
 
@@ -81,6 +90,13 @@ class InstructionDef:
     extension: str = ""
     asm_format: Optional[str] = None
     source_file: Optional[str] = None
+    access_width: Optional[int] = None  # bits, for load/store only
+    exceptions: List[str] = field(default_factory=list)
+
+    @property
+    def memory_access_width(self) -> Optional[int]:
+        """Alias for access_width (bits)."""
+        return self.access_width
 
 
 @dataclass

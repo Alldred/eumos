@@ -13,6 +13,11 @@ inputs:
   - rs1
   - imm
 extension: "I"
+access_width: 32
+exceptions:
+  - LOAD_ADDRESS_MISALIGNED
+  - LOAD_ACCESS_FAULT
+  - LOAD_PAGE_FAULT
 description: |
   LW loads a word from memory, sign-extends it, and stores it in rd.
   rd = sign_extend(MEM[rs1 + imm][31:0])

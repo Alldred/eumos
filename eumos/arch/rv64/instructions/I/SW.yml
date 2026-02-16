@@ -12,6 +12,11 @@ inputs:
   - rs1
   - imm
 extension: "I"
+access_width: 32
+exceptions:
+  - STORE_AMO_ADDRESS_MISALIGNED
+  - STORE_AMO_ACCESS_FAULT
+  - STORE_AMO_PAGE_FAULT
 description: |
   SW stores the least significant word in rs2 to the memory address computed by rs1 plus the immediate.
   MEM[rs1 + imm] = rs2[31:0]

@@ -13,6 +13,11 @@ inputs:
   - rs1
   - imm
 extension: "I"
+access_width: 8
+exceptions:
+  - LOAD_ADDRESS_MISALIGNED
+  - LOAD_ACCESS_FAULT
+  - LOAD_PAGE_FAULT
 description: |
   LB loads a byte from memory, sign-extends it, and stores it in rd.
   rd = sign_extend(MEM[rs1 + imm][7:0])

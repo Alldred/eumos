@@ -11,5 +11,7 @@ fixed_values:
   imm: 0x1
 inputs: []
 extension: "I"
+exceptions:
+  - BREAKPOINT
 description: |
   EBREAK is used to return control to a debugging environment.
