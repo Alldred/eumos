@@ -13,6 +13,8 @@ inputs:
   - rs2
   - imm
 extension: "I"
+groups:
+  - branch/conditional
 description: |
   BGE branches to the target address if rs1 is greater than or equal to rs2 (signed).
   if (rs1 >= rs2) pc += imm

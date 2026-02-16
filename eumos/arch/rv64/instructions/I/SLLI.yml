@@ -14,6 +14,8 @@ inputs:
   - rs1
   - imm
 extension: "I"
+groups:
+  - alu
 description: |
   SLLI performs a logical left shift of rs1 by the amount in imm[5:0] and stores the result in rd.
   rd = rs1 << imm[5:0]

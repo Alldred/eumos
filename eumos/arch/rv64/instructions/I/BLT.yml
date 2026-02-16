@@ -6,6 +6,8 @@ mnemonic: blt
 format: B
 asm_format: default
 extension: "I"
+groups:
+  - branch/conditional
 fixed_values:
   opcode: 0x63
   funct3: 0x4

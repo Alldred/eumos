@@ -11,6 +11,8 @@ inputs:
   - rd
   - imm
 extension: "I"
+groups:
+  - branch/jump
 description: |
   JAL jumps to the target address and stores the address of the next instruction in rd.
   rd = pc + 4; pc += imm

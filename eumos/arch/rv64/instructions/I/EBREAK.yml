@@ -11,6 +11,8 @@ fixed_values:
   imm: 0x1
 inputs: []
 extension: "I"
+groups:
+  - system/call
 exceptions:
   - BREAKPOINT
 description: |

@@ -7,7 +7,11 @@ from .csr_loader import load_all_csrs
 from .exception_loader import load_all_exception_causes
 from .format_loader import load_all_formats
 from .gpr_loader import load_all_gprs
-from .instruction_loader import load_all_instructions
+from .instruction_loader import (
+    instruction_groups,
+    instructions_by_group,
+    load_all_instructions,
+)
 
 
 class Eumos:
@@ -81,4 +85,10 @@ class Eumos:
             self._instruction_count = len(self.instructions)
         return self._instruction_count
 
-    # Optionally add validation or other utility methods
+    def instructions_by_group(self, group: str):
+        """Return instructions that belong to the given group (exact or path prefix match)."""
+        return instructions_by_group(self.instructions, group)
+
+    def instruction_groups(self):
+        """Return all distinct groups from loaded instructions (sorted)."""
+        return instruction_groups(self.instructions)

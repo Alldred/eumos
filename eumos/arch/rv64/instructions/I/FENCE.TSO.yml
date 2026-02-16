@@ -11,5 +11,7 @@ fixed_values:
 imm: 0x010
 inputs: []
 extension: "I"
+groups:
+  - system/ordering
 description: |
   FENCE.TSO orders all memory operations as observed by other RISC-V harts.

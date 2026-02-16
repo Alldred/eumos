@@ -14,6 +14,8 @@ inputs:
   - rs1
   - rs2
 extension: "I"
+groups:
+  - alu
 description: |
   SUB subtracts the value in rs2 from rs1 and stores the result in rd.
   rd = rs1 - rs2

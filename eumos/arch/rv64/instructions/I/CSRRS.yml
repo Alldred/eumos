@@ -13,6 +13,8 @@ inputs:
   - rs1
   - imm
 extension: "I"
+groups:
+  - system/csr
 description: |
   CSRRS atomically reads and sets bits in the CSR.
   t = CSR[imm]; CSR[imm] = t | rs1; rd = t

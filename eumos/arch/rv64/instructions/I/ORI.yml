@@ -13,6 +13,8 @@ inputs:
   - rs1
   - imm
 extension: "I"
+groups:
+  - alu
 description: |
   ORI performs a bitwise OR of rs1 and the sign-extended immediate and stores the result in rd.
   rd = rs1 | imm

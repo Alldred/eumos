@@ -12,6 +12,8 @@ inputs:
   - rd
   - imm
 extension: "I"
+groups:
+  - system/csr
 description: |
   CSRRWI atomically swaps values in the CSR and a zero-extended immediate.
   t = CSR[imm[11:0]]; CSR[imm[11:0]] = zimm; rd = t

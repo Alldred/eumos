@@ -10,6 +10,8 @@ __all__ = [
     "load_all_exception_causes",
     "load_all_formats",
     "load_all_gprs",
+    "instruction_groups",
+    "instructions_by_group",
     "load_all_instructions",
     "CSRDef",
     "CSRFieldDef",
@@ -27,7 +29,11 @@ from .eumos import Eumos
 from .exception_loader import load_all_exception_causes
 from .format_loader import load_all_formats
 from .gpr_loader import load_all_gprs
-from .instruction_loader import load_all_instructions
+from .instruction_loader import (
+    instruction_groups,
+    instructions_by_group,
+    load_all_instructions,
+)
 from .models import (
     CSRDef,
     CSRFieldDef,

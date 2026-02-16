@@ -14,6 +14,8 @@ inputs:
   - rs1
   - rs2
 extension: "I"
+groups:
+  - alu
 description: |
   OR performs a bitwise OR of rs1 and rs2 and stores the result in rd.
   rd = rs1 | rs2

@@ -11,6 +11,8 @@ inputs:
   - rd
   - imm
 extension: "I"
+groups:
+  - alu/constant
 description: |
   AUIPC adds the upper 20 bits of the immediate to the program counter and stores the result in rd.
   rd = pc + (imm << 12)

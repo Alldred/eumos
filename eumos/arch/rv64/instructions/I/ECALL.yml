@@ -11,6 +11,8 @@ fixed_values:
   imm: 0x0
 inputs: []
 extension: "I"
+groups:
+  - system/call
 exceptions:
   - ENVIRONMENT_CALL_FROM_U_MODE
   - ENVIRONMENT_CALL_FROM_S_MODE

@@ -13,6 +13,8 @@ inputs:
   - rs1
   - imm
 extension: "I"
+groups:
+  - branch/jump
 description: |
   JALR jumps to the address computed by rs1 plus the immediate, and stores the address of the next instruction in rd.
   rd = pc + 4; pc = (rs1 + imm) & ~1

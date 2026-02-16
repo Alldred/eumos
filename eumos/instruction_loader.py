@@ -4,11 +4,34 @@
 """Load RISC-V instruction YAML into Python objects, recursively."""
 
 import os
-from typing import Dict
+import re
+import warnings
+from typing import Dict, List, Set
 
 from .format_loader import load_all_formats
 from .models import FieldEncoding, FormatDef, Instruction, Operand
 from .validation import load_yaml, validate_yaml_schema
+
+# Optional: known groups for allowlist validation (warn on unknown).
+_GROUP_FORMAT = re.compile(r"^[a-z][a-z0-9]*(/[a-z][a-z0-9]*)*$")
+_KNOWN_GROUPS: Set[str] = {
+    "memory/load",
+    "memory/store",
+    "branch/conditional",
+    "branch/jump",
+    "alu",
+    "alu/arith",
+    "alu/logical",
+    "alu/constant",
+    "system/csr",
+    "system/call",
+    "system/return",
+    "system/ordering",
+    "float",
+    "float/load",
+    "float/store",
+    "compressed",
+}
 
 _INSTR_SCHEMA = os.path.join(
     os.path.dirname(__file__), "arch", "schemas", "instruction_schema.yaml"
@@ -74,6 +97,35 @@ def _load_instruction(
         fv_imm = raw["fixed_values"].get("imm")
         if fv_imm is not None:
             raw["imm"] = fv_imm
+
+    # Groups: required, non-empty; normalize (strip, lowercase); optional format and allowlist
+    groups_raw = raw.get("groups")
+    if groups_raw is None:
+        raise ValueError(f"{file_path}: missing required 'groups'.")
+    if not isinstance(groups_raw, list) or len(groups_raw) == 0:
+        raise ValueError(f"{file_path}: 'groups' must be a non-empty list.")
+    normalized = []
+    for g in groups_raw:
+        if not isinstance(g, str):
+            raise ValueError(
+                f"{file_path}: each 'groups' entry must be a string, got {type(g).__name__}."
+            )
+        s = g.strip().lower()
+        if not s:
+            raise ValueError(f"{file_path}: empty group string in 'groups'.")
+        if not _GROUP_FORMAT.match(s):
+            raise ValueError(
+                f"{file_path}: group {g!r} does not match format (e.g. 'memory/load', 'alu')."
+            )
+        if s not in _KNOWN_GROUPS:
+            warnings.warn(
+                f"{file_path}: unknown group {s!r} (not in known-groups allowlist).",
+                UserWarning,
+                stacklevel=2,
+            )
+        normalized.append(s)
+    raw["groups"] = normalized
+
     return Instruction(**raw)
 
 
@@ -90,3 +142,21 @@ def load_all_instructions() -> Dict[str, Instruction]:
                 instr_obj = _load_instruction(file_path, schema_path, formats)
                 result[instr_obj.mnemonic] = instr_obj
     return result
+
+
+def instructions_by_group(
+    instructions: Dict[str, Instruction], group: str
+) -> Dict[str, Instruction]:
+    """Return instructions that belong to the given group (exact or path prefix match)."""
+    g = group.strip().lower()
+    return {
+        mnemonic: instr for mnemonic, instr in instructions.items() if instr.in_group(g)
+    }
+
+
+def instruction_groups(instructions: Dict[str, Instruction]) -> List[str]:
+    """Return all distinct groups from the given instructions (sorted)."""
+    out: Set[str] = set()
+    for instr in instructions.values():
+        out.update(instr.groups)
+    return sorted(out)

@@ -13,6 +13,8 @@ inputs:
   - rs1
   - imm
 extension: "I"
+groups:
+  - alu
 description: |
   ADDI adds the value in rs1 and the immediate, and stores the result in rd.
   rd = rs1 + imm
