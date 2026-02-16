@@ -4,6 +4,7 @@
 name: SB
 mnemonic: sb
 format: S
+asm_format: default
 fixed_values:
   opcode: 0x23
   funct3: 0x0

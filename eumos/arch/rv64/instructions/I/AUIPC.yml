@@ -4,6 +4,7 @@
 name: AUIPC
 mnemonic: auipc
 format: U
+asm_format: default
 fixed_values:
   opcode: 0x17
 inputs:

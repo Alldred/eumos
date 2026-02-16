@@ -4,6 +4,7 @@
 name: FENCE
 mnemonic: fence
 format: I
+asm_format: zero_operand
 fixed_values:
   opcode: 0x0F
   funct3: 0x0

@@ -4,6 +4,7 @@
 name: SRLI
 mnemonic: srli
 format: I
+asm_format: default
 fixed_values:
   opcode: 0x13
   funct3: 0x5

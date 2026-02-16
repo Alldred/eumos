@@ -4,6 +4,7 @@
 name: CSRRW
 mnemonic: csrrw
 format: I
+asm_format: default
 fixed_values:
   opcode: 0x73
   funct3: 0x1

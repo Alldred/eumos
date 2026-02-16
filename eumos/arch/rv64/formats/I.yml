@@ -4,8 +4,8 @@
 name: I
 fullname: Immediate Type
 asm_formats:
-  standard:
-    operands: [rd, rs1, imm]  # Standard: addi rd, rs1, imm
+  default:
+    operands: [rd, rs1, imm]  # addi rd, rs1, imm
   offset_base:
     operands: [rd, imm, rs1]  # Offset-base: lw rd, imm(rs1)
     offset_base: true

@@ -63,6 +63,17 @@ def _load_instruction(
         raw["format"] = format_obj
         raw["operands"] = operands
         raw["fields"] = fields
+        asm_format = raw.get("asm_format")
+        asm_formats = getattr(format_obj, "asm_formats", None) or {}
+        if asm_format not in asm_formats:
+            raise ValueError(
+                f"{file_path}: asm_format '{asm_format}' not in format {format_name} asm_formats {list(asm_formats)}"
+            )
+    # Expose fixed imm as top-level imm when present (e.g. ECALL has imm in fixed_values only)
+    if "imm" not in raw and raw.get("fixed_values"):
+        fv_imm = raw["fixed_values"].get("imm")
+        if fv_imm is not None:
+            raw["imm"] = fv_imm
     return Instruction(**raw)
 
 

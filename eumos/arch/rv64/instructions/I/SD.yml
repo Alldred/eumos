@@ -4,6 +4,7 @@
 name: SD
 mnemonic: sd
 format: S
+asm_format: default
 fixed_values:
   opcode: 0x23
   funct3: 0x3

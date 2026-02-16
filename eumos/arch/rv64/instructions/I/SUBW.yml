@@ -4,6 +4,7 @@
 name: SUBW
 mnemonic: subw
 format: R
+asm_format: default
 fixed_values:
   opcode: 0x3B
   funct3: 0x0
