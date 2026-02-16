@@ -205,6 +205,10 @@ class Decoder:
             pc=pc,
         )
 
+    def from_opc(self, word: int, pc: Optional[int] = None, **kwargs: Any) -> Optional[InstructionInstance]:
+        """Decode from 32-bit opcode. Alias for decode() for API compatibility."""
+        return self.decode(word, pc=pc, **kwargs)
+
     def from_asm(
         self,
         asm_str: str,

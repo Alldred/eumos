@@ -458,3 +458,23 @@ class InstructionInstance:
             if name not in seen and (info := self.get_operand_info(name)) is not None:
                 seen.add(name)
                 yield info
+
+    def to_opc(self) -> int:
+        """Encode this instruction instance to a 32-bit opcode."""
+        from .encoder import encode_instruction
+
+        return encode_instruction(self.instruction, self.operand_values)
+
+    def to_asm(self) -> str:
+        """Return assembly-style string: mnemonic + operands (e.g. 'addi x1, x0, 42')."""
+        mnemonic = self.instruction.mnemonic
+        parts = []
+        for name in self.instruction.inputs:
+            val = self.operand_values.get(name)
+            if val is not None:
+                op = self.instruction.operands.get(name)
+                if op and op.type == "register":
+                    parts.append(f"x{val}")
+                else:
+                    parts.append(str(val))
+        return f"{mnemonic} {', '.join(parts)}" if parts else mnemonic
