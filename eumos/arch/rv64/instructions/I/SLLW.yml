@@ -14,6 +14,8 @@ inputs:
   - rs1
   - rs2
 extension: "I"
+groups:
+  - alu
 description: |
   SLLW performs a logical left shift of the lower 32 bits of rs1 by the amount in rs2[4:0], sign-extends the result, and stores it in rd.
   rd = sign_extend((rs1[31:0] << rs2[4:0])[31:0])

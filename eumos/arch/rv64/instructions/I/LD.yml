@@ -13,6 +13,8 @@ inputs:
   - rs1
   - imm
 extension: "I"
+groups:
+  - memory/load
 access_width: 64
 exceptions:
   - LOAD_ADDRESS_MISALIGNED

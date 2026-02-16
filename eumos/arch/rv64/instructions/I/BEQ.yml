@@ -13,6 +13,8 @@ inputs:
   - rs2
   - imm
 extension: "I"
+groups:
+  - branch/conditional
 description: |
   BEQ branches to the target address if rs1 and rs2 are equal.
   if (rs1 == rs2) pc += imm

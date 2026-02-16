@@ -13,6 +13,8 @@ inputs:
   - rs2
   - imm
 extension: "I"
+groups:
+  - branch/conditional
 description: |
   BNE branches to the target address if rs1 and rs2 are not equal.
   if (rs1 != rs2) pc += imm

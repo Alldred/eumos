@@ -13,6 +13,8 @@ inputs:
   - rs1
   - imm
 extension: "I"
+groups:
+  - system/csr
 description: |
   CSRRW atomically swaps values in the CSR and integer register.
   t = CSR[imm]; CSR[imm] = rs1; rd = t

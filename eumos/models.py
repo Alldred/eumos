@@ -92,6 +92,16 @@ class InstructionDef:
     source_file: Optional[str] = None
     access_width: Optional[int] = None  # bits, for load/store only
     exceptions: List[str] = field(default_factory=list)
+    groups: List[str] = field(default_factory=list)
+
+    def in_group(self, group: str) -> bool:
+        """True if this instruction belongs to the given group (exact or path prefix)."""
+        g = group.strip().lower()
+        for tag in self.groups:
+            tag = tag.strip().lower()
+            if tag == g or tag.startswith(g + "/"):
+                return True
+        return False
 
     @property
     def memory_access_width(self) -> Optional[int]:

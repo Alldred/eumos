@@ -14,6 +14,8 @@ inputs:
   - rs1
   - rs2
 extension: "I"
+groups:
+  - alu
 description: |
   AND performs a bitwise AND of rs1 and rs2 and stores the result in rd.
   rd = rs1 & rs2

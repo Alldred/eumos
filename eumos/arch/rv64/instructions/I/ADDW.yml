@@ -14,6 +14,8 @@ inputs:
   - rs1
   - rs2
 extension: "I"
+groups:
+  - alu
 description: |
   ADDW adds the values in rs1 and rs2, sign-extends the lower 32 bits, and stores the result in rd.
   rd = sign_extend((rs1 + rs2)[31:0])

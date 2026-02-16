@@ -11,6 +11,8 @@ inputs:
   - rd
   - imm
 extension: "I"
+groups:
+  - alu/constant
 description: |
   LUI loads the upper 20 bits of the immediate into rd, setting the lower 12 bits to zero.
   rd = imm << 12

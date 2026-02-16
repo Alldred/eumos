@@ -29,3 +29,8 @@ mapping:
     required: false
     sequence:
       - type: str
+  groups:
+    type: seq
+    required: true
+    sequence:
+      - type: str

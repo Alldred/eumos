@@ -11,5 +11,7 @@ fixed_values:
   imm: 0x302
 inputs: []
 extension: "I"
+groups:
+  - system/return
 description: |
   MRET returns from machine mode trap handler.

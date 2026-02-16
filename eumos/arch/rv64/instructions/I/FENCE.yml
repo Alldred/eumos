@@ -10,5 +10,7 @@ fixed_values:
   funct3: 0x0
 inputs: []
 extension: "I"
+groups:
+  - system/ordering
 description: |
   FENCE orders memory and I/O operations as specified by the pred and succ fields.
