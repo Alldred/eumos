@@ -4,6 +4,7 @@
 name: CSRRSI
 mnemonic: csrrsi
 format: I
+asm_format: default
 fixed_values:
   opcode: 0x73
   funct3: 0x6

@@ -4,6 +4,7 @@
 name: BLTU
 mnemonic: bltu
 format: B
+asm_format: default
 fixed_values:
   opcode: 0x63
   funct3: 0x6

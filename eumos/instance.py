@@ -262,28 +262,7 @@ class InstructionInstance:
     def to_asm(self) -> str:
         """Return the assembly string for this instruction instance."""
         fmt = self.instruction.format
-        asm_formats = getattr(fmt, "asm_formats", None)
-        if not asm_formats:
-            raise ValueError(f"No asm_formats defined for format {fmt.name}")
-
-        # Use asm_format from instruction definition if specified
-        format_name = getattr(self.instruction, "asm_format", None)
-        if format_name is None:
-            # Prefer well-known keys for deterministic fallback
-            if "default" in asm_formats:
-                format_name = "default"
-            elif "standard" in asm_formats:
-                format_name = "standard"
-            else:
-                # Last resort: use any available format
-                format_name = next(iter(asm_formats))
-
-        if format_name not in asm_formats:
-            raise ValueError(
-                f"Unknown asm_format '{format_name}' for format {fmt.name}"
-            )
-
-        fmt_entry = asm_formats[format_name]
+        fmt_entry = fmt.asm_formats[self.instruction.asm_format]
         operand_names = fmt_entry["operands"]
         offset_base = fmt_entry.get("offset_base", False)
 

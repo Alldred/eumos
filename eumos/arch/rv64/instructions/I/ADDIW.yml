@@ -4,6 +4,7 @@
 name: ADDIW
 mnemonic: addiw
 format: I
+asm_format: default
 fixed_values:
   opcode: 0x1B
   funct3: 0x0

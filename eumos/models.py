@@ -33,7 +33,7 @@ class FormatDef:
     fullname: str
     asm_formats: Dict[
         str, Dict[str, Any]
-    ]  # e.g., {"standard": {"operands": [...]}, "offset_base": {...}}
+    ]  # e.g., {"default": {"operands": [...]}, "offset_base": {...}}
     fields: List[FieldDef]
     description: str
 

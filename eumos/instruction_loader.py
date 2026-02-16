@@ -63,6 +63,12 @@ def _load_instruction(
         raw["format"] = format_obj
         raw["operands"] = operands
         raw["fields"] = fields
+        asm_format = raw.get("asm_format")
+        asm_formats = getattr(format_obj, "asm_formats", None) or {}
+        if asm_format not in asm_formats:
+            raise ValueError(
+                f"{file_path}: asm_format '{asm_format}' not in format {format_name} asm_formats {list(asm_formats)}"
+            )
     return Instruction(**raw)
 
 

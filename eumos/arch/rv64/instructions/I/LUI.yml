@@ -4,6 +4,7 @@
 name: LUI
 mnemonic: lui
 format: U
+asm_format: default
 fixed_values:
   opcode: 0x37
 inputs:

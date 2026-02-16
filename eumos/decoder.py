@@ -257,68 +257,42 @@ class Decoder:
             raise ValueError(f"Unknown instruction mnemonic: {asm_mnemonic}")
 
         fmt = instruction.format
-        asm_formats = getattr(fmt, "asm_formats", None)
-        if not asm_formats:
-            raise ValueError(f"No asm_formats defined for format {fmt.name}")
-
-        # Each instruction has one asm format; the format def lists several because
-        # different instructions sharing that format use different syntax (e.g. I-type:
-        # addi uses "standard", lw uses "offset_base", ecall uses "zero_operand").
-        # If the instruction doesn't specify asm_format, use the format's default.
-        format_name = getattr(instruction, "asm_format", None)
-        if format_name is None:
-            format_name = (
-                "default"
-                if "default" in asm_formats
-                else next(iter(asm_formats))
-            )
-        if format_name not in asm_formats:
-            raise ValueError(
-                f"Unknown asm_format '{format_name}' for format {fmt.name}"
-            )
-
-        fmt_entry = asm_formats[format_name]
+        fmt_entry = fmt.asm_formats[instruction.asm_format]
         operand_names = fmt_entry["operands"]
         offset_base = fmt_entry.get("offset_base", False)
+        stripped_asm = asm_str.strip()
 
-        # Zero-operand (e.g. ecall, ebreak, mret)
         if len(operand_names) == 0:
             pattern = rf"^{re.escape(instruction.mnemonic)}$"
-            m = re.match(pattern, asm_str.strip(), flags=re.IGNORECASE)
+            m = re.match(pattern, stripped_asm, flags=re.IGNORECASE)
             if not m:
                 raise ValueError(
                     f"Could not parse asm string '{asm_str}' for instruction {instruction.mnemonic}"
                 )
-            return InstructionInstance(
-                instruction=instruction,
-                operand_values={},
-                register_context=register_context,
-                pc=pc,
-            )
-
-        # Build pattern for this format
-        if offset_base and len(operand_names) >= 2:
-            if len(operand_names) > 2:
-                num_prefix = len(operand_names) - 2
-                prefix_pattern = r",\s*".join([r"([^,\s()]+)"] * num_prefix)
-                pattern = rf"^{re.escape(instruction.mnemonic)}\s+{prefix_pattern}\s*,\s*([^,\s()]+)\(\s*([^)\s]+)\s*\)$"
-            else:
-                pattern = rf"^{re.escape(instruction.mnemonic)}\s+([^,\s()]+)\(\s*([^)\s]+)\s*\)$"
+            operand_values = {}
         else:
-            pattern = (
-                rf"^{re.escape(instruction.mnemonic)}\s+"
-                + r",\s*".join([r"([^,\s()]+)"] * len(operand_names))
-                + r"$"
+            if offset_base and len(operand_names) >= 2:
+                if len(operand_names) > 2:
+                    num_prefix = len(operand_names) - 2
+                    prefix = r",\s*".join([r"([^,\s()]+)"] * num_prefix)
+                    pattern = rf"^{re.escape(instruction.mnemonic)}\s+{prefix}\s*,\s*([^,\s()]+)\(\s*([^)\s]+)\s*\)$"
+                else:
+                    pattern = rf"^{re.escape(instruction.mnemonic)}\s+([^,\s()]+)\(\s*([^)\s]+)\s*\)$"
+            else:
+                pattern = (
+                    rf"^{re.escape(instruction.mnemonic)}\s+"
+                    + r",\s*".join([r"([^,\s()]+)"] * len(operand_names))
+                    + r"$"
+                )
+            m = re.match(pattern, stripped_asm, flags=re.IGNORECASE)
+            if not m:
+                raise ValueError(
+                    f"Could not parse asm string '{asm_str}' for instruction {instruction.mnemonic}"
+                )
+            operand_values = _parse_asm_operand_values(
+                instruction, operand_names, list(m.groups())
             )
 
-        m = re.match(pattern, asm_str.strip(), flags=re.IGNORECASE)
-        if not m:
-            raise ValueError(
-                f"Could not parse asm string '{asm_str}' for instruction {instruction.mnemonic}"
-            )
-        operand_values = _parse_asm_operand_values(
-            instruction, operand_names, list(m.groups())
-        )
         return InstructionInstance(
             instruction=instruction,
             operand_values=operand_values,

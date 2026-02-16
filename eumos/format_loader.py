@@ -36,6 +36,11 @@ def _load_format(file_path: str, schema_path: str) -> Format:
 
         raw["fields"] = [_field_def_from_raw(f) for f in raw["fields"]]
 
+    asm_formats = raw.get("asm_formats") or {}
+    if not asm_formats:
+        raise ValueError(
+            f"{file_path}: format must have non-empty asm_formats"
+        )
     return Format(**raw)
 
 

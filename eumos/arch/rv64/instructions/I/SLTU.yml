@@ -4,6 +4,7 @@
 name: SLTU
 mnemonic: sltu
 format: R
+asm_format: default
 fixed_values:
   opcode: 0x33
   funct3: 0x3

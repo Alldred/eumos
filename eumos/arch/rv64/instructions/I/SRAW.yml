@@ -4,6 +4,7 @@
 name: SRAW
 mnemonic: sraw
 format: R
+asm_format: default
 fixed_values:
   opcode: 0x3B
   funct3: 0x5

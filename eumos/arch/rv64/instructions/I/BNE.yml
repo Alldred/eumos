@@ -4,6 +4,7 @@
 name: BNE
 mnemonic: bne
 format: B
+asm_format: default
 fixed_values:
   opcode: 0x63
   funct3: 0x1
