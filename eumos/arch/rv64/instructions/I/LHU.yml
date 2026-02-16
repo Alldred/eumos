@@ -13,6 +13,11 @@ inputs:
   - rs1
   - imm
 extension: "I"
+access_width: 16
+exceptions:
+  - LOAD_ADDRESS_MISALIGNED
+  - LOAD_ACCESS_FAULT
+  - LOAD_PAGE_FAULT
 description: |
   LHU loads a halfword from memory, zero-extends it, and stores it in rd.
   rd = zero_extend(MEM[rs1 + imm][15:0])

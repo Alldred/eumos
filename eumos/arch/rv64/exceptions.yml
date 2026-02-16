@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+# RISC-V Privileged Spec exception cause codes (mcause when interrupt=0).
+
+exceptions:
+  - code: 0
+    name: Instruction address misaligned
+    identifier: INSTRUCTION_ADDRESS_MISALIGNED
+  - code: 1
+    name: Instruction access fault
+    identifier: INSTRUCTION_ACCESS_FAULT
+  - code: 2
+    name: Illegal instruction
+    identifier: ILLEGAL_INSTRUCTION
+  - code: 3
+    name: Breakpoint
+    identifier: BREAKPOINT
+  - code: 4
+    name: Load address misaligned
+    identifier: LOAD_ADDRESS_MISALIGNED
+  - code: 5
+    name: Load access fault
+    identifier: LOAD_ACCESS_FAULT
+  - code: 6
+    name: Store/AMO address misaligned
+    identifier: STORE_AMO_ADDRESS_MISALIGNED
+  - code: 7
+    name: Store/AMO access fault
+    identifier: STORE_AMO_ACCESS_FAULT
+  - code: 8
+    name: Environment call from U-mode
+    identifier: ENVIRONMENT_CALL_FROM_U_MODE
+  - code: 9
+    name: Environment call from S-mode
+    identifier: ENVIRONMENT_CALL_FROM_S_MODE
+  - code: 10
+    name: Environment call from M-mode
+    identifier: ENVIRONMENT_CALL_FROM_M_MODE
+  - code: 11
+    name: Instruction page fault
+    identifier: INSTRUCTION_PAGE_FAULT
+  - code: 12
+    name: Load page fault
+    identifier: LOAD_PAGE_FAULT
+  - code: 13
+    name: Store/AMO page fault
+    identifier: STORE_AMO_PAGE_FAULT

@@ -23,3 +23,9 @@ mapping:
   description: {type: str, required: false}
   imm: {type: any, required: false}
   extension: {type: str, required: true}
+  access_width: {type: int, required: false}
+  exceptions:
+    type: seq
+    required: false
+    sequence:
+      - type: str
