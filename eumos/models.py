@@ -159,8 +159,16 @@ class InstructionDef:
         if op_name == "rs1":
             return (rs1_is_gpr, False)
         if op_name in ("rs2", "rs3"):
+            # Fixed rs2/rs3 (e.g. FCVT.W.S rs2=0, FMV.X.W rs2=0) are encoding-only, not real sources
+            if op_name in self.fixed_values:
+                return None
             return (False, False)  # FPR source
         return (False, False)
+
+    def is_operand_fpr(self, op_name: str) -> bool:
+        """True if the register operand op_name is an FPR (use 'f' prefix in asm / parse as f0-f31)."""
+        role = self._register_operand_role(op_name)
+        return role is not None and not role[0]  # register and not GPR => FPR
 
     def gpr_source_operands(self) -> List[str]:
         """Operand names that are GPR (integer) sources. Empty if not applicable."""

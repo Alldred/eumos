@@ -11,6 +11,7 @@ immediates, etc.).
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
+from .constants import FPR_NAME_TO_INDEX
 from .instance import InstructionInstance
 from .instruction_loader import load_all_instructions
 from .models import FieldEncoding, InstructionDef
@@ -28,21 +29,6 @@ def _sign_extend(value: int, width: int) -> int:
     if value & sign_bit:
         return value - (1 << width)
     return value
-
-
-# RISC-V FPR ABI names (f0..f31): ft0-ft7, fs0-fs1, fa0-fa7, fs2-fs11, ft8-ft11
-_FPR_ABI_NAMES = (
-    "ft0", "ft1", "ft2", "ft3", "ft4", "ft5", "ft6", "ft7",
-    "fs0", "fs1",
-    "fa0", "fa1", "fa2", "fa3", "fa4", "fa5", "fa6", "fa7",
-    "fs2", "fs3", "fs4", "fs5", "fs6", "fs7", "fs8", "fs9", "fs10", "fs11",
-    "ft8", "ft9", "ft10", "ft11",
-)
-_FPR_NAME_TO_INDEX: Dict[str, int] = {}
-for _i, _n in enumerate(_FPR_ABI_NAMES):
-    _FPR_NAME_TO_INDEX[_n] = _i
-for _i in range(32):
-    _FPR_NAME_TO_INDEX[f"f{_i}"] = _i
 
 
 def _parse_register(val: str) -> int:
@@ -72,7 +58,7 @@ def _parse_fpr(val: str) -> int:
         if not 0 <= idx <= 31:
             raise ValueError(f"FPR index {idx} out of range (must be 0..31)")
         return idx
-    idx = _FPR_NAME_TO_INDEX.get(val.lower())
+    idx = FPR_NAME_TO_INDEX.get(val.lower())
     if idx is not None:
         return idx
     raise ValueError(f"Invalid FPR: {val}")
@@ -89,18 +75,7 @@ def _parse_asm_operand_values(
         val = value_strings[i]
         op = instruction.operands.get(op_name)
         if op and op.type == "register":
-            # Float load/store: rs1 is GPR (base address); rd/rs2 are FPR. Other F/D instrs: all regs are FPR.
-            is_fpr = (
-                instruction.extension in ("F", "D")
-                and not (
-                    op_name == "rs1"
-                    and (
-                        instruction.in_group("float/load")
-                        or instruction.in_group("float/store")
-                    )
-                )
-            )
-            if is_fpr:
+            if instruction.is_operand_fpr(op_name):
                 operand_values[op_name] = _parse_fpr(val)
             else:
                 operand_values[op_name] = _parse_register(val)

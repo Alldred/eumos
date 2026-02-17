@@ -106,6 +106,10 @@ def test_gpr_fpr_operand_accessors():
     assert feq.gpr_dest_operands() == ["rd"]
     assert set(feq.fpr_source_operands()) == {"rs1", "rs2"}
 
+    # Fixed rs2 (encoding-only): not a real FPR source
+    fcvt_w_s = eu.instructions["fcvt.w.s"]
+    assert fcvt_w_s.fpr_source_operands() == ["rs1"]
+
     # Instance: decoded values by category
     inst = dec.from_asm("flw f2, 4(x3)")
     assert inst.gpr_sources() == {"rs1": 3}

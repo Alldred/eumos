@@ -6,6 +6,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, Iterator, Optional, Tuple, Union
 
+from .constants import FPR_NAME_TO_INDEX
 from .encoder import encode_instruction
 from .models import CSRDef, FieldEncoding, FPRDef, GPRDef, InstructionDef, Operand
 
@@ -54,20 +55,6 @@ _GPR_NAME_TO_INDEX["fp"] = 8  # s0/fp
 # Lazy-loaded GPR definitions (index -> GPRDef) for reset_value and access lookup.
 _GPR_DEFS: Optional[Dict[int, GPRDef]] = None
 
-# RISC-V FPR ABI names (f0..f31): ft0-ft7, fs0-fs1, fa0-fa7, fs2-fs11, ft8-ft11
-_FPR_ABI_NAMES = (
-    "ft0", "ft1", "ft2", "ft3", "ft4", "ft5", "ft6", "ft7",
-    "fs0", "fs1",
-    "fa0", "fa1", "fa2", "fa3", "fa4", "fa5", "fa6", "fa7",
-    "fs2", "fs3", "fs4", "fs5", "fs6", "fs7", "fs8", "fs9", "fs10", "fs11",
-    "ft8", "ft9", "ft10", "ft11",
-)
-_FPR_NAME_TO_INDEX: Dict[str, int] = {}
-for _i, _n in enumerate(_FPR_ABI_NAMES):
-    _FPR_NAME_TO_INDEX[_n] = _i
-for _i in range(32):
-    _FPR_NAME_TO_INDEX[f"f{_i}"] = _i
-
 # Lazy-loaded FPR definitions (index -> FPRDef).
 _FPR_DEFS: Optional[Dict[int, FPRDef]] = None
 
@@ -108,7 +95,7 @@ def _fpr_to_index(reg: Union[int, str]) -> Optional[int]:
         if 0 <= reg <= 31:
             return reg
         return None
-    idx = _FPR_NAME_TO_INDEX.get(reg.lower())
+    idx = FPR_NAME_TO_INDEX.get(reg.lower())
     return idx
 
 
@@ -317,18 +304,9 @@ class InstructionInstance:
                 raise ValueError(f"Missing operand value for {op_name}")
             op = self.instruction.operands.get(op_name)
             if op and op.type == "register":
-                # Float load/store: rs1 is GPR (base); rd/rs2 are FPR. Other F/D: all regs FPR.
-                is_fpr = (
-                    self.instruction.extension in ("F", "D")
-                    and not (
-                        op_name == "rs1"
-                        and (
-                            self.instruction.in_group("float/load")
-                            or self.instruction.in_group("float/store")
-                        )
-                    )
+                operand_strs.append(
+                    f"f{value}" if self.instruction.is_operand_fpr(op_name) else f"x{value}"
                 )
-                operand_strs.append(f"f{value}" if is_fpr else f"x{value}")
             else:
                 operand_strs.append(str(value))
 

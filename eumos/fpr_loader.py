@@ -23,5 +23,5 @@ def load_all_fprs() -> Dict[int, FPRDef]:
             file_path = os.path.join(fpr_root, file)
             validate_yaml_schema(file_path, schema_path)
             data = load_yaml(file_path)
-            result[data["index"]] = FPRDef(**data)
+            result[data["index"]] = FPRDef(**data, source_file=file_path)
     return result
