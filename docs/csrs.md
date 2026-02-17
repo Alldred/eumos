@@ -29,7 +29,7 @@ csrs = load_all_csrs()
 # csrs: name (e.g. "mstatus", "mepc") -> CSRDef
 ```
 
-CSR YAML files are loaded from the built-in `arch/rv64/csrs/` directory and validated with `arch/schemas/csr_file_schema.yaml`. See [Data and packaging](data-and-packaging.md).
+CSR YAML files are loaded from the built-in `arch/rv64/csrs/` directory and validated with `eumos/arch/schemas/csr_schema.yaml`. See [Data and packaging](data-and-packaging.md).
 
 ## CSRDef fields
 
