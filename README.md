@@ -71,6 +71,6 @@ See [docs/](docs/) for full details.
 
 ## Data directory and packaging
 
-All RISC-V YAML data and schema files are included in the package under the `arch/` directory. Loader functions always load from this built-in location; there is no support for user-specified data directories or environment variables. All schema and data files are included automatically via `pyproject.toml` and `MANIFEST.in`.
+All RISC-V YAML data and schema files are included in the installed package under the `eumos/arch/` directory. Loader functions always load from this built-in location; there is no support for user-specified data directories or environment variables. All schema and data files are included automatically via `pyproject.toml` and `MANIFEST.in`.
 
 If you install Eumos as a package, all required data files are available and no additional configuration is needed.
