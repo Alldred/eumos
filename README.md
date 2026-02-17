@@ -5,29 +5,41 @@
 
 Eumos is a Python-based machine-readable specification for RISC-V.
 
-## Running
+## What is Eumos?
 
-Start from the project shell so the environment is set up:
+Eumos provides a machine-readable RISC-V specification: instructions, CSRs, GPRs, FPRs, and instruction formats are defined in YAML and loaded into Python. You get loaders for all of this data, a decoder and encoder for instruction words and assembly, and optional runtime context (register and CSR values). Requires Python 3.13+; dependencies are managed with [uv](https://docs.astral.sh/uv/).
+
+## Quick start
+
+From the project root, run the project shell to set up the environment:
 
 ```bash
 ./bin/shell
 ```
 
-Then install dependencies (including dev tools like pytest) with uv:
+Install dependencies (including dev tools like pytest):
 
 ```bash
 uv sync --extra dev
 ```
 
-### Example usage
-
-To see how to use the instruction loader, run the example script (use `uv run` so dependencies like PyYAML are available):
+Run the main example to load and inspect instructions, CSRs, and formats:
 
 ```bash
 uv run python -m example.eumos_example
 ```
 
-This will load instructions from the built-in YAML files and print a summary.
+For assembly parsing, encoding, and decoding:
+
+```bash
+uv run python -m example.asm_encoding_example
+```
+
+## Documentation
+
+[docs/](docs/) — architecture, API usage, and topic guides.
+
+## Running
 
 ### Tests
 
@@ -49,24 +61,16 @@ uv run pytest --cov=eumos --cov-report=term-missing
 
 Add `--cov-report=html` to generate an HTML report in `htmlcov/`.
 
-## Data model
+## At a glance
 
-- **load_all_instructions()** returns a dict: mnemonic (e.g. `"addi"`, `"sd"`) -> **Instruction**.
-- Each **Instruction** has: `name`, `mnemonic`, `format` (a **Format**), `operands` (name -> **Operand**), `fields` (name -> **FieldEncoding**), `inputs` (ordered list), `fixed_values` (opcode, funct3, funct7), `imm`, `description`, and `extension`.
-- **Format** has `asm_formats` (dict: format name -> format definition with `operands` (ordered list of operand names) and optional `offset_base`) and `fields` (list of **FieldDef**). Encoding bit ranges come from `fields`; for split immediates (S/B type), use `parts[].bits` and `parts[].operand_bits`.
-- For user data (concrete operand values, register names/values), use **InstructionInstance** and **RegisterContext** from `instance`; `get_operand_info(name)` returns **OperandInfo**, which combines ISA and user data per operand.
-- **Decoder**: use `Decoder().from_opc(word)` to decode a 32-bit instruction opcode into an **InstructionInstance** with `instruction` and `operand_values` filled from the encoding (rd, rs1, rs2, imm, etc.). Use `Decoder().from_asm(asm_str)` to parse assembly strings. Without a **RegisterContext**, GPR values and resolved names are not populated; only what can be decoded from the bits is set.
+- **Instructions**: `load_all_instructions()` (or `Eumos().instructions`) returns mnemonic → **Instruction**; each instruction has format, operands, fields, and encoding info.
+- **Decode and encode**: **Decoder** (`from_opc(word)`, `from_asm(asm_str)`) and **InstructionInstance** (`to_asm()`, `to_opc()`) for round-trip between assembly and opcode.
+- **Runtime**: **ISA** holds instructions and/or CSRs; **RegisterContext** and **CSRContext** (from `instance`) provide register and CSR values; **InstructionInstance** and `get_operand_info()` combine ISA and context.
 
-## CSRs
+See [docs/](docs/) for full details.
 
-- **load_all_csrs()** (from `csr_loader`) returns a dict: name (e.g. `"mstatus"`, `"mepc"`) -> **CSR**. CSR YAML files are loaded from the built-in `arch/rv64/csrs/` directory and validated by `arch/schemas/csr_file_schema.yaml`.
-- **CSR** has `name`, `address` (12-bit), `description`, and optional `privilege`, `access`, `width`, `extension`.
-- **ISA** (from `instance`) holds optional `instructions` and/or `csrs`; you can load either or both (e.g. `ISA(instructions=load_all_instructions(), csrs=load_all_csrs())`). When CSRs are loaded, `isa.csrs_by_address` maps 12-bit address -> **CSR** for resolving the `imm` operand of CSR instructions.
-- **CSRContext** (from `instance`) maps CSR address or name to runtime values; optionally pass `csr_defs` so that `set`/`get_value` accept names (e.g. `"mstatus"`) and `get_name`/`get_address` work.
-- For CSR instructions (e.g. `csrrw`, `csrrs`), the `imm` operand in `operand_values` is the 12-bit CSR address. Use **ISA.resolve_csr(instruction_instance, csr_context)** to get the **CSR** and current value (if a **CSRContext** is provided).
+## Data directory and packaging
 
-## Data Directory and Packaging
-
-All RISC-V YAML data and schema files are included in the package under the `arch/` directory. Loader functions always load from this built-in location; there is no support for user-specified data directories or environment variables. All schema and data files are included automatically via `pyproject.toml` and `MANIFEST.in`.
+All RISC-V YAML data and schema files are included in the installed package under the `eumos/arch/` directory. Loader functions always load from this built-in location; there is no support for user-specified data directories or environment variables. All schema and data files are included automatically via `pyproject.toml` and `MANIFEST.in`.
 
 If you install Eumos as a package, all required data files are available and no additional configuration is needed.
