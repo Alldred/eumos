@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+index: 1
+abi_name: ft1
+reset_value: 0
+access: read-write

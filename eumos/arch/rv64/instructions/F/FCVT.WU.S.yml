@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: FCVT.WU.S
+mnemonic: fcvt.wu.s
+format: R
+asm_format: default
+fixed_values:
+  opcode: 0x53
+  funct7: 0x60
+  funct3: 0x7
+  rs2: 1
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "F"
+groups:
+  - float
+description: |
+  FCVT.WU.S converts f[rs1] to unsigned 32-bit integer in rd. rs2=1. Zero-extends to XLEN.

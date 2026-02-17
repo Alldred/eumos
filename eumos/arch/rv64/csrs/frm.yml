@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: frm
+address: 0x002
+description: Floating-Point Dynamic Rounding Mode (RNE, RTZ, RDN, RUP, RMM, 111 reserved).
+privilege: user
+access: read-write
+width: 32
+extension: "F"
+reset_value: 0
+fields:
+  - name: frm
+    bits: [2, 0]
+    description: Rounding mode (3 bits)

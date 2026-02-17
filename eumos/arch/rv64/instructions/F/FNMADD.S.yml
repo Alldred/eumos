@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: FNMADD.S
+mnemonic: fnmadd.s
+format: R4
+asm_format: default
+fixed_values:
+  opcode: 0x4F
+  funct3: 0x7
+  funct2: 0
+inputs:
+  - rd
+  - rs1
+  - rs2
+  - rs3
+extension: "F"
+groups:
+  - float
+description: |
+  FNMADD.S fused negate multiply-add: f[rd] = -f[rs1]*f[rs2] - f[rs3].

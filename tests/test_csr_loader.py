@@ -38,7 +38,7 @@ def test_load_csr_mstatus_has_fields():
     assert csr.fields["reserved"].bits == (2, 0)
     assert "reserved1" in csr.fields
     assert "reserved3" in csr.fields
-    assert csr.fields["reserved3"].bits == (63, 13)
+    assert csr.fields["reserved3"].bits == (63, 15)
 
 
 def test_load_csr_mepc_has_reset_value_and_full_width_field():
@@ -60,4 +60,4 @@ def test_load_all_csrs_returns_dict():
     assert csrs["mstatus"].address == 0x300
     assert csrs["mepc"].address == 0x341
     assert csrs["mcause"].address == 0x342
-    assert len(csrs) == 16
+    assert len(csrs) == 19

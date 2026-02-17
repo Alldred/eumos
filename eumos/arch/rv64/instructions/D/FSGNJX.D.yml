@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: FSGNJX.D
+mnemonic: fsgnjx.d
+format: R
+asm_format: default
+fixed_values:
+  opcode: 0x53
+  funct7: 0x11
+  funct3: 0x2
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "D"
+groups:
+  - float
+description: |
+  FSGNJX.D copies f[rs1] with sign = sign(rs1) XOR sign(rs2) to f[rd].

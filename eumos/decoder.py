@@ -30,6 +30,21 @@ def _sign_extend(value: int, width: int) -> int:
     return value
 
 
+# RISC-V FPR ABI names (f0..f31): ft0-ft7, fs0-fs1, fa0-fa7, fs2-fs11, ft8-ft11
+_FPR_ABI_NAMES = (
+    "ft0", "ft1", "ft2", "ft3", "ft4", "ft5", "ft6", "ft7",
+    "fs0", "fs1",
+    "fa0", "fa1", "fa2", "fa3", "fa4", "fa5", "fa6", "fa7",
+    "fs2", "fs3", "fs4", "fs5", "fs6", "fs7", "fs8", "fs9", "fs10", "fs11",
+    "ft8", "ft9", "ft10", "ft11",
+)
+_FPR_NAME_TO_INDEX: Dict[str, int] = {}
+for _i, _n in enumerate(_FPR_ABI_NAMES):
+    _FPR_NAME_TO_INDEX[_n] = _i
+for _i in range(32):
+    _FPR_NAME_TO_INDEX[f"f{_i}"] = _i
+
+
 def _parse_register(val: str) -> int:
     """Parse register name to index, validating 0..31 range.
 
@@ -50,6 +65,19 @@ def _parse_register(val: str) -> int:
         raise ValueError(f"Invalid register: {val}")
 
 
+def _parse_fpr(val: str) -> int:
+    """Parse FPR name to index (0..31). Accepts 'fNN' or FPR ABI names. Raises ValueError for invalid."""
+    if val.startswith("f") and val[1:].isdigit():
+        idx = int(val[1:])
+        if not 0 <= idx <= 31:
+            raise ValueError(f"FPR index {idx} out of range (must be 0..31)")
+        return idx
+    idx = _FPR_NAME_TO_INDEX.get(val.lower())
+    if idx is not None:
+        return idx
+    raise ValueError(f"Invalid FPR: {val}")
+
+
 def _parse_asm_operand_values(
     instruction: InstructionDef,
     operand_names: List[str],
@@ -61,7 +89,21 @@ def _parse_asm_operand_values(
         val = value_strings[i]
         op = instruction.operands.get(op_name)
         if op and op.type == "register":
-            operand_values[op_name] = _parse_register(val)
+            # Float load/store: rs1 is GPR (base address); rd/rs2 are FPR. Other F/D instrs: all regs are FPR.
+            is_fpr = (
+                instruction.extension in ("F", "D")
+                and not (
+                    op_name == "rs1"
+                    and (
+                        instruction.in_group("float/load")
+                        or instruction.in_group("float/store")
+                    )
+                )
+            )
+            if is_fpr:
+                operand_values[op_name] = _parse_fpr(val)
+            else:
+                operand_values[op_name] = _parse_register(val)
         elif op and op.type == "immediate":
             try:
                 operand_values[op_name] = int(val, 0)
@@ -136,11 +178,16 @@ def _decode_operand_values(word: int, instruction: InstructionDef) -> Dict[str, 
 def _lookup_key(
     instruction: InstructionDef,
 ) -> Tuple[int, Optional[int], Optional[int]]:
-    """(opcode, funct3, funct7) for table lookup; None where not in fixed_values."""
+    """(opcode, funct3, funct7) for table lookup; None where not in fixed_values. R4 uses (opcode, funct3, None)."""
     fv = instruction.fixed_values
     opcode = fv.get("opcode")
     funct3 = fv.get("funct3")
-    funct7 = fv.get("funct7")
+    # R4 format has rs3/funct2 in high bits, not funct7; use None so decode matches any word with this opcode/funct3
+    fmt_name = getattr(instruction.format, "name", None) if instruction.format else None
+    if fmt_name == "R4":
+        funct7 = None
+    else:
+        funct7 = fv.get("funct7")
     return (
         opcode if opcode is not None else 0,
         funct3 if funct3 is not None else None,
@@ -202,21 +249,33 @@ class Decoder:
             or self._lookup.get((opcode, None, None))
         )
 
-        # If we found a match, check if there are ambiguous alternatives
+        # If we found a match, check if there are ambiguous alternatives (same opcode/funct3, different imm/rs2/etc.)
         if instr is not None:
-            key = (opcode, funct3, None) if funct3 is not None else (opcode, None, None)
-            if key in self._ambiguous_lookup:
-                # Decode operand values to check immediate field for disambiguation
-                candidates = self._ambiguous_lookup[key]
+            amb_key = None
+            for k in [
+                (opcode, funct3, funct7),
+                (opcode, funct3, None),
+                (opcode, None, None),
+            ]:
+                if k in self._ambiguous_lookup:
+                    amb_key = k
+                    break
+            if amb_key is not None:
+                # Decode operand values and match any fixed_values (imm, rs2, etc.) for disambiguation
+                candidates = self._ambiguous_lookup[amb_key]
                 for candidate in candidates:
                     operand_values = _decode_operand_values(word, candidate)
-                    # Check if immediate matches the expected value in fixed_values
-                    if "imm" in candidate.fixed_values:
-                        expected_imm = candidate.fixed_values["imm"]
-                        decoded_imm = operand_values.get("imm")
-                        if decoded_imm == expected_imm:
-                            instr = candidate
+                    fv = candidate.fixed_values
+                    match = True
+                    for k, expected in fv.items():
+                        if k in ("opcode", "funct3", "funct7"):
+                            continue
+                        if operand_values.get(k) != expected:
+                            match = False
                             break
+                    if match:
+                        instr = candidate
+                        break
 
         if instr is None:
             return None

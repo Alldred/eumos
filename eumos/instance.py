@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, Iterator, Optional, Tuple, Union
 
 from .encoder import encode_instruction
-from .models import CSRDef, FieldEncoding, GPRDef, InstructionDef, Operand
+from .models import CSRDef, FieldEncoding, FPRDef, GPRDef, InstructionDef, Operand
 
 # RISC-V GPR ABI names (x0..x31). s0/fp is canonical as s0.
 _GPR_ABI_NAMES = (
@@ -54,6 +54,23 @@ _GPR_NAME_TO_INDEX["fp"] = 8  # s0/fp
 # Lazy-loaded GPR definitions (index -> GPRDef) for reset_value and access lookup.
 _GPR_DEFS: Optional[Dict[int, GPRDef]] = None
 
+# RISC-V FPR ABI names (f0..f31): ft0-ft7, fs0-fs1, fa0-fa7, fs2-fs11, ft8-ft11
+_FPR_ABI_NAMES = (
+    "ft0", "ft1", "ft2", "ft3", "ft4", "ft5", "ft6", "ft7",
+    "fs0", "fs1",
+    "fa0", "fa1", "fa2", "fa3", "fa4", "fa5", "fa6", "fa7",
+    "fs2", "fs3", "fs4", "fs5", "fs6", "fs7", "fs8", "fs9", "fs10", "fs11",
+    "ft8", "ft9", "ft10", "ft11",
+)
+_FPR_NAME_TO_INDEX: Dict[str, int] = {}
+for _i, _n in enumerate(_FPR_ABI_NAMES):
+    _FPR_NAME_TO_INDEX[_n] = _i
+for _i in range(32):
+    _FPR_NAME_TO_INDEX[f"f{_i}"] = _i
+
+# Lazy-loaded FPR definitions (index -> FPRDef).
+_FPR_DEFS: Optional[Dict[int, FPRDef]] = None
+
 
 def get_gpr_def(reg_index: int) -> Optional[GPRDef]:
     """Return GPR definition for index 0..31 (reset value, access), or None. Loads GPR YAML on first use."""
@@ -68,6 +85,31 @@ def get_gpr_def(reg_index: int) -> Optional[GPRDef]:
     if not (0 <= reg_index <= 31):
         return None
     return _GPR_DEFS.get(reg_index)
+
+
+def get_fpr_def(reg_index: int) -> Optional[FPRDef]:
+    """Return FPR definition for index 0..31 (reset value, access), or None. Loads FPR YAML on first use."""
+    global _FPR_DEFS
+    if _FPR_DEFS is None:
+        try:
+            from . import fpr_loader
+
+            _FPR_DEFS = fpr_loader.load_all_fprs()
+        except Exception:
+            _FPR_DEFS = {}
+    if not (0 <= reg_index <= 31):
+        return None
+    return _FPR_DEFS.get(reg_index)
+
+
+def _fpr_to_index(reg: Union[int, str]) -> Optional[int]:
+    """Resolve register to FPR index (0..31). Accepts int index or RISC-V name (e.g. 'fa0', 'f10')."""
+    if isinstance(reg, int):
+        if 0 <= reg <= 31:
+            return reg
+        return None
+    idx = _FPR_NAME_TO_INDEX.get(reg.lower())
+    return idx
 
 
 @dataclass
@@ -275,7 +317,18 @@ class InstructionInstance:
                 raise ValueError(f"Missing operand value for {op_name}")
             op = self.instruction.operands.get(op_name)
             if op and op.type == "register":
-                operand_strs.append(f"x{value}")
+                # Float load/store: rs1 is GPR (base); rd/rs2 are FPR. Other F/D: all regs FPR.
+                is_fpr = (
+                    self.instruction.extension in ("F", "D")
+                    and not (
+                        op_name == "rs1"
+                        and (
+                            self.instruction.in_group("float/load")
+                            or self.instruction.in_group("float/store")
+                        )
+                    )
+                )
+                operand_strs.append(f"f{value}" if is_fpr else f"x{value}")
             else:
                 operand_strs.append(str(value))
 
@@ -307,6 +360,38 @@ class InstructionInstance:
     def to_opc(self) -> int:
         """Pack this instruction instance into a 32-bit opcode."""
         return encode_instruction(self.instruction, self.operand_values)
+
+    def gpr_sources(self) -> Dict[str, Any]:
+        """GPR (integer) source operand names -> decoded values. E.g. {'rs1': 2} for base register."""
+        return {
+            name: self.operand_values[name]
+            for name in self.instruction.gpr_source_operands()
+            if name in self.operand_values
+        }
+
+    def gpr_dests(self) -> Dict[str, Any]:
+        """GPR (integer) destination operand names -> decoded values. E.g. {'rd': 1}."""
+        return {
+            name: self.operand_values[name]
+            for name in self.instruction.gpr_dest_operands()
+            if name in self.operand_values
+        }
+
+    def fpr_sources(self) -> Dict[str, Any]:
+        """FPR (float) source operand names -> decoded values. E.g. {'rs1': 2, 'rs2': 3}."""
+        return {
+            name: self.operand_values[name]
+            for name in self.instruction.fpr_source_operands()
+            if name in self.operand_values
+        }
+
+    def fpr_dests(self) -> Dict[str, Any]:
+        """FPR (float) destination operand names -> decoded values. E.g. {'rd': 1}."""
+        return {
+            name: self.operand_values[name]
+            for name in self.instruction.fpr_dest_operands()
+            if name in self.operand_values
+        }
 
     instruction: InstructionDef
     operand_values: Dict[str, Any] = field(default_factory=dict)

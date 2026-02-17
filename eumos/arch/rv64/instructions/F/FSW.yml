@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: FSW
+mnemonic: fsw
+format: S
+asm_format: default
+fixed_values:
+  opcode: 0x27
+  funct3: 0x2
+inputs:
+  - rs2
+  - rs1
+  - imm
+extension: "F"
+groups:
+  - float
+  - float/store
+access_width: 32
+exceptions:
+  - STORE_AMO_ADDRESS_MISALIGNED
+  - STORE_AMO_ACCESS_FAULT
+  - STORE_AMO_PAGE_FAULT
+description: |
+  FSW stores single-precision value in f[rs2] to memory at rs1 + imm.
+  MEM[rs1 + imm] = f[rs2][31:0]

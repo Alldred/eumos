@@ -108,10 +108,111 @@ class InstructionDef:
         """Alias for access_width (bits)."""
         return self.access_width
 
+    def _register_operand_role(self, op_name: str) -> Optional[Tuple[bool, bool]]:
+        """Return (is_gpr, is_dest) for register operand op_name, or None if not a register.
+        (True, True) = GPR dest, (True, False) = GPR source, (False, True) = FPR dest, (False, False) = FPR source.
+        """
+        op = self.operands.get(op_name)
+        if not op or op.type != "register":
+            return None
+        ext = self.extension
+        mnem = self.mnemonic.lower()
+        is_load = self.in_group("float/load")
+        is_store = self.in_group("float/store")
+
+        if ext not in ("F", "D"):
+            # Integer instruction: all register operands are GPR
+            is_dest = op_name == "rd"
+            return (True, is_dest)
+
+        # F/D: classify by op_name and instruction semantics
+        if is_load:
+            if op_name == "rd":
+                return (False, True)   # FPR dest
+            if op_name == "rs1":
+                return (True, False)  # GPR source (base)
+            return None
+        if is_store:
+            if op_name == "rs2":
+                return (False, False)  # FPR source
+            if op_name == "rs1":
+                return (True, False)   # GPR source (base)
+            return None
+
+        # rd is GPR dest for: compare, fclass, fcvt float->int, fmv.x
+        rd_is_gpr = (
+            mnem.startswith("feq.") or mnem.startswith("flt.") or mnem.startswith("fle.")
+            or mnem.startswith("fclass.")
+            or mnem in ("fcvt.w.s", "fcvt.wu.s", "fcvt.w.d", "fcvt.wu.d",
+                        "fcvt.l.s", "fcvt.lu.s", "fcvt.l.d", "fcvt.lu.d")
+            or mnem in ("fmv.x.w", "fmv.x.d")
+        )
+        # rs1 is GPR source for: fcvt int->float, fmv.w.x, fmv.d.x
+        rs1_is_gpr = (
+            mnem in ("fcvt.s.w", "fcvt.s.wu", "fcvt.s.l", "fcvt.s.lu",
+                     "fcvt.d.w", "fcvt.d.wu", "fcvt.d.l", "fcvt.d.lu")
+            or mnem in ("fmv.w.x", "fmv.d.x")
+        )
+
+        if op_name == "rd":
+            return (rd_is_gpr, True)
+        if op_name == "rs1":
+            return (rs1_is_gpr, False)
+        if op_name in ("rs2", "rs3"):
+            return (False, False)  # FPR source
+        return (False, False)
+
+    def gpr_source_operands(self) -> List[str]:
+        """Operand names that are GPR (integer) sources. Empty if not applicable."""
+        out: List[str] = []
+        for name in self.operands:
+            role = self._register_operand_role(name)
+            if role and role[0] and not role[1]:  # GPR, source
+                out.append(name)
+        return out
+
+    def gpr_dest_operands(self) -> List[str]:
+        """Operand names that are GPR (integer) destinations. Empty if not applicable."""
+        out: List[str] = []
+        for name in self.operands:
+            role = self._register_operand_role(name)
+            if role and role[0] and role[1]:  # GPR, dest
+                out.append(name)
+        return out
+
+    def fpr_source_operands(self) -> List[str]:
+        """Operand names that are FPR (float) sources. Empty if not applicable."""
+        out: List[str] = []
+        for name in self.operands:
+            role = self._register_operand_role(name)
+            if role and not role[0] and not role[1]:  # FPR, source
+                out.append(name)
+        return out
+
+    def fpr_dest_operands(self) -> List[str]:
+        """Operand names that are FPR (float) destinations. Empty if not applicable."""
+        out: List[str] = []
+        for name in self.operands:
+            role = self._register_operand_role(name)
+            if role and not role[0] and role[1]:  # FPR, dest
+                out.append(name)
+        return out
+
 
 @dataclass
 class GPRDef:
     """ISA definition for one general-purpose register: index, ABI name, reset value, and access."""
+
+    index: int
+    abi_name: str
+    reset_value: int
+    access: str
+    source_file: Optional[str] = None
+
+
+@dataclass
+class FPRDef:
+    """ISA definition for one floating-point register: index, ABI name, reset value, and access."""
 
     index: int
     abi_name: str
@@ -152,3 +253,4 @@ CSR = CSRDef
 Format = FormatDef
 Instruction = InstructionDef
 GPR = GPRDef
+FPR = FPRDef

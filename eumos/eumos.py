@@ -6,6 +6,7 @@
 from .csr_loader import load_all_csrs
 from .exception_loader import load_all_exception_causes
 from .format_loader import load_all_formats
+from .fpr_loader import load_all_fprs
 from .gpr_loader import load_all_gprs
 from .instruction_loader import (
     instruction_groups,
@@ -22,6 +23,7 @@ class Eumos:
         csrs (dict): Loaded Control and Status Registers.
         exception_causes (dict): Loaded exception cause definitions (code -> ExceptionCauseDef).
         gprs (dict): Loaded General Purpose Registers.
+        fprs (dict): Loaded Floating-Point Registers.
         formats (dict): Loaded instruction formats.
         instructions (dict): Loaded instructions.
 
@@ -38,6 +40,7 @@ class Eumos:
         self.csrs = self._sorted_dict(load_all_csrs())
         self.exception_causes = load_all_exception_causes()
         self.gprs = self._sorted_dict(load_all_gprs())
+        self.fprs = self._sorted_dict(load_all_fprs())
         self.formats = self._sorted_dict(load_all_formats())
         self.instructions = self._sorted_dict(load_all_instructions())
 
@@ -50,10 +53,17 @@ class Eumos:
         self.csrs = load_all_csrs()
         self.exception_causes = load_all_exception_causes()
         self.gprs = load_all_gprs()
+        self.fprs = load_all_fprs()
         self.formats = load_all_formats()
         self.instructions = load_all_instructions()
         # Reset cached counts
-        for attr in ("_gpr_count", "_csr_count", "_format_count", "_instruction_count"):
+        for attr in (
+            "_gpr_count",
+            "_fpr_count",
+            "_csr_count",
+            "_format_count",
+            "_instruction_count",
+        ):
             if hasattr(self, attr):
                 delattr(self, attr)
 
@@ -63,6 +73,13 @@ class Eumos:
         if not hasattr(self, "_gpr_count"):
             self._gpr_count = len(self.gprs)
         return self._gpr_count
+
+    @property
+    def fpr_count(self):
+        """Return the number of loaded FPRs (cached)."""
+        if not hasattr(self, "_fpr_count"):
+            self._fpr_count = len(self.fprs)
+        return self._fpr_count
 
     @property
     def csr_count(self):

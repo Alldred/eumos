@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: fcsr
+address: 0x003
+description: Floating-Point Control and Status Register (frm + fflags). Bits 31-8 reserved.
+privilege: user
+access: read-write
+width: 32
+extension: "F"
+reset_value: 0
+fields:
+  - name: fflags
+    bits: [4, 0]
+    description: Accrued exception flags
+  - name: frm
+    bits: [7, 5]
+    description: Rounding mode

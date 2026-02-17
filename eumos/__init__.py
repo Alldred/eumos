@@ -9,12 +9,14 @@ __all__ = [
     "load_all_csrs",
     "load_all_exception_causes",
     "load_all_formats",
+    "load_all_fprs",
     "load_all_gprs",
     "instruction_groups",
     "instructions_by_group",
     "load_all_instructions",
     "CSRDef",
     "CSRFieldDef",
+    "FPRDef",
     "GPRDef",
     "InstructionDef",
     "FormatDef",
@@ -28,6 +30,7 @@ from .csr_loader import load_all_csrs
 from .eumos import Eumos
 from .exception_loader import load_all_exception_causes
 from .format_loader import load_all_formats
+from .fpr_loader import load_all_fprs
 from .gpr_loader import load_all_gprs
 from .instruction_loader import (
     instruction_groups,
@@ -42,6 +45,7 @@ from .models import (
     FieldEncoding,
     FieldPart,
     FormatDef,
+    FPRDef,
     GPRDef,
     InstructionDef,
     Operand,
