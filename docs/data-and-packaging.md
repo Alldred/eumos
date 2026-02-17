@@ -15,11 +15,11 @@ All RISC-V YAML data and schema files are **included in the package** under the 
 
 Under `eumos/arch/`:
 
-- **arch/schemas/** — YAML schemas used to validate data files (e.g. `instruction_schema.yaml`, `csr_file_schema.yaml`, `format_file_schema.yaml`, `fpr_file_schema.yaml`).
+- **arch/schemas/** — YAML schemas used to validate data files (e.g. `instruction_schema.yaml`, `csr_schema.yaml`, `format_schema.yaml`, `gpr_file_schema.yaml`, `fpr_file_schema.yaml`).
 - **arch/rv64/** — RV64G-style data:
   - **instructions/** — One YAML file per instruction (or group), organised in subdirectories by extension (e.g. I, M, F, D). Loaded by `instruction_loader`; validated with `instruction_schema.yaml`.
-  - **csrs/** — One YAML file per CSR (e.g. `mstatus.yml`, `mepc.yml`). Loaded by `csr_loader`; validated with `csr_file_schema.yaml`.
-  - **formats/** — Instruction format definitions (R, I, S, B, U, J, R4, etc.). Loaded by `format_loader`.
+  - **csrs/** — One YAML file per CSR (e.g. `mstatus.yml`, `mepc.yml`). Loaded by `csr_loader`; validated with `csr_schema.yaml`.
+  - **formats/** — Instruction format definitions (R, I, S, B, U, J, R4, etc.). Loaded by `format_loader`; validated with `format_schema.yaml`.
   - **fprs/** — Floating-point register definitions (f0–f31). Loaded by `fpr_loader`; validated with `fpr_file_schema.yaml`.
 
 GPR definitions are loaded from a built-in path inside the package (see `gpr_loader`). Exception cause definitions are loaded from a built-in path (see `exception_loader`).
