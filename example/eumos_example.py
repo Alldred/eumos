@@ -5,7 +5,7 @@
 
 from eumos import Eumos
 
-# Instantiate Eumos (requires $EUMOS_ROOT to be set in the environment)
+# Instantiate Eumos (run from project root, e.g. after ./bin/shell, so the package is on the path)
 eu = Eumos()
 
 print("\n=== Eumos Example Output ===\n")
