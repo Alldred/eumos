@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: FSUB.S
+mnemonic: fsub.s
+format: R
+asm_format: default
+fixed_values:
+  opcode: 0x53
+  funct7: 0x04
+  funct3: 0x7
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "F"
+groups:
+  - float
+description: |
+  FSUB.S subtracts f[rs2] from f[rs1], writes to f[rd].
+  f[rd] = f[rs1] - f[rs2]

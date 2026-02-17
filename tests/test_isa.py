@@ -34,7 +34,7 @@ def test_isa_instructions_only():
     instrs = instruction_loader.load_all_instructions()
     isa = ISA(instructions=instrs)
     assert isa.instructions is not None
-    assert len(isa.instructions) == 60
+    assert len(isa.instructions) == 122
     assert isa.csrs is None
     assert isa.csrs_by_address is None
 

@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: fflags
+address: 0x001
+description: Floating-Point Accrued Exception Flags (NV, DZ, OF, UF, NX).
+privilege: user
+access: read-write
+width: 32
+extension: "F"
+reset_value: 0
+fields:
+  - name: NV
+    bits: 4
+    description: Invalid operation
+  - name: DZ
+    bits: 3
+    description: Divide by zero
+  - name: OF
+    bits: 2
+    description: Overflow
+  - name: UF
+    bits: 1
+    description: Underflow
+  - name: NX
+    bits: 0
+    description: Inexact

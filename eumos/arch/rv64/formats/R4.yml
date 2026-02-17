@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: R4
+fullname: R4-type
+asm_formats:
+  default:
+    operands: [rd, rs1, rs2, rs3]  # FMA: rd = (rs1*rs2) +/- rs3
+fields:
+  - name: rs3
+    bits: [31, 27]
+    type: register
+  - name: funct2
+    bits: [26, 25]
+    type: funct
+  - name: rs2
+    bits: [24, 20]
+    type: register
+  - name: rs1
+    bits: [19, 15]
+    type: register
+  - name: funct3
+    bits: [14, 12]
+    type: funct
+  - name: rd
+    bits: [11, 7]
+    type: register
+  - name: opcode
+    bits: [6, 0]
+    type: opcode
+description: R4-type format for floating-point fused multiply-add instructions.

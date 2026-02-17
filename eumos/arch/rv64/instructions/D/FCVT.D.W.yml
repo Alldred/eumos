@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: FCVT.D.W
+mnemonic: fcvt.d.w
+format: R
+asm_format: default
+fixed_values:
+  opcode: 0x53
+  funct7: 0x69
+  funct3: 0x7
+  rs2: 0
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "D"
+groups:
+  - float
+description: |
+  FCVT.D.W converts signed 32-bit integer in rs1 to double in f[rd].

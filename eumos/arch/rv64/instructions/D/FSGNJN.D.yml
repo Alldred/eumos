@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: FSGNJN.D
+mnemonic: fsgnjn.d
+format: R
+asm_format: default
+fixed_values:
+  opcode: 0x53
+  funct7: 0x11
+  funct3: 0x1
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "D"
+groups:
+  - float
+description: |
+  FSGNJN.D copies f[rs1] with negated sign of f[rs2] to f[rd].

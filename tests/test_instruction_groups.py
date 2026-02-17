@@ -104,7 +104,7 @@ def test_instruction_groups_returns_all_distinct():
 def test_all_instructions_load_with_valid_groups():
     """Smoke: all built-in instruction YAMLs load and have non-empty groups."""
     instrs = instruction_loader.load_all_instructions()
-    assert len(instrs) == 60
+    assert len(instrs) == 122
     for mnemonic, instr in instrs.items():
         assert isinstance(instr, models.InstructionDef), mnemonic
         assert hasattr(instr, "groups"), mnemonic

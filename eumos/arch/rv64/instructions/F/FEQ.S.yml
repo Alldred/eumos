@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: FEQ.S
+mnemonic: feq.s
+format: R
+asm_format: default
+fixed_values:
+  opcode: 0x53
+  funct7: 0x50
+  funct3: 0x2
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "F"
+groups:
+  - float
+description: |
+  FEQ.S writes 1 to integer rd if f[rs1] == f[rs2], else 0. Quiet comparison.

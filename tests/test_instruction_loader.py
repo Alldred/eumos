@@ -43,7 +43,7 @@ def test_load_instruction_ecall():
 def test_load_all_instructions_returns_dict():
     instrs = instruction_loader.load_all_instructions()
     assert isinstance(instrs, dict)
-    assert len(instrs) == 60
+    assert len(instrs) == 122
     assert "addi" in instrs
     assert "sd" in instrs
     assert "beq" in instrs

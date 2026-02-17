@@ -28,6 +28,9 @@ fields:
   - name: MPP
     bits: [12, 11]
     description: Machine previous privilege mode (2 bits)
+  - name: FS
+    bits: [14, 13]
+    description: Floating-Point State (Off=00, Initial=01, Clean=10, Dirty=11)
   - name: reserved3
-    bits: [63, 13]
+    bits: [63, 15]
     description: Unused
