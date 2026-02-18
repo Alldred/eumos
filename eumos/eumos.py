@@ -109,3 +109,34 @@ class Eumos:
     def instruction_groups(self):
         """Return all distinct groups from loaded instructions (sorted)."""
         return instruction_groups(self.instructions)
+
+    def reservable_resources(self):
+        """
+        Return reservable resources for use by instruction-stream generators.
+
+        Returns a dict mapping namespace (str) to list of identifiers (int or str).
+        E.g. {"GPR": [1, ..., 31], "FPR": [0, ..., 31], "CSR": ["mstatus", ...]}.
+        GPR 0 (x0, the zero register) is excluded: it is not writable and always zero.
+        Read-only CSRs (access "RO") are excluded; only writable CSRs are reservable.
+        Tibbar (or other consumers) can build a ResourceSpace from this.
+        """
+        result = {}
+        # x0 is read-only zero; only x1..x31 are reservable for writes
+        result["GPR"] = list(range(1, self.gpr_count))
+        result["FPR"] = list(range(self.fpr_count))
+        # Only include writable CSRs; exclude read-only (e.g. access "RO")
+        result["CSR"] = [
+            name
+            for name, csr in self.csrs.items()
+            if not _csr_is_read_only(csr)
+        ]
+        return result
+
+
+def _csr_is_read_only(csr) -> bool:
+    """True if the CSR is read-only (access 'RO' or 'read-only'). Schema requires access."""
+    access = getattr(csr, "access", None)
+    if access is None:
+        return False
+    a = access.strip().upper()
+    return a == "RO" or a == "READ-ONLY"

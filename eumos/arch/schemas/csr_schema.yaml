@@ -1,13 +1,18 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred.
 
+# CSR-level access is required. Field-level access is optional (overrides CSR when set).
+# Allowed: read-only, read-write, write-only (and RISC-V spec style RO, RW, WO if desired).
 type: map
 mapping:
   name: {type: str, required: true}
   address: {type: int, required: true}
   description: {type: str, required: false}
   privilege: {type: str, required: false}
-  access: {type: str, required: false}
+  access:
+    type: str
+    required: true
+    enum: [read-only, read-write, write-only, RO, WO, RW, RWI, RWIR, WARL, WLRL, WAR, NA]
   width: {type: int, required: false}
   extension: {type: str, required: false}
   reset_value: {type: int, required: false}
@@ -21,4 +26,8 @@ mapping:
           bits: {type: any, required: true}
           description: {type: str, required: false}
           reset_value: {type: int, required: false}
-          access: {type: str, required: false}
+          # Optional per-field access override; same enum as CSR-level when present
+          access:
+            type: str
+            required: false
+            enum: [read-only, read-write, write-only, RO, WO, RW, RWI, RWIR, WARL, WLRL, WAR, NA]
