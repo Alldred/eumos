@@ -7,7 +7,6 @@ format: R4
 asm_format: default
 fixed_values:
   opcode: 0x47
-  funct3: 0x7
   funct2: 1
 inputs:
   - rd

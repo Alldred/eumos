@@ -104,7 +104,10 @@ def encode_instruction(
         if name in fv:
             val = fv[name]
         else:
-            val = operand_values.get(name)
+            if name == "funct3" and instruction.uses_rounding_mode_operand():
+                val = operand_values.get("rm", operand_values.get(name))
+            else:
+                val = operand_values.get(name)
         if val is None:
             continue
 
