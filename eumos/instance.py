@@ -6,51 +6,9 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, Iterator, Optional, Tuple, Union
 
-from .constants import FPR_NAME_TO_INDEX
+from .constants import FPR_NAME_TO_INDEX, GPR_ABI_NAMES, GPR_NAME_TO_INDEX
 from .encoder import encode_instruction
 from .models import CSRDef, FieldEncoding, FPRDef, GPRDef, InstructionDef, Operand
-
-# RISC-V GPR ABI names (x0..x31). s0/fp is canonical as s0.
-_GPR_ABI_NAMES = (
-    "zero",
-    "ra",
-    "sp",
-    "gp",
-    "tp",
-    "t0",
-    "t1",
-    "t2",
-    "s0",
-    "s1",
-    "a0",
-    "a1",
-    "a2",
-    "a3",
-    "a4",
-    "a5",
-    "a6",
-    "a7",
-    "s2",
-    "s3",
-    "s4",
-    "s5",
-    "s6",
-    "s7",
-    "s8",
-    "s9",
-    "s10",
-    "s11",
-    "t3",
-    "t4",
-    "t5",
-    "t6",
-)
-_GPR_NAME_TO_INDEX: Dict[str, int] = {}
-for _i, _n in enumerate(_GPR_ABI_NAMES):
-    _GPR_NAME_TO_INDEX[_n] = _i
-for _i in range(32):
-    _GPR_NAME_TO_INDEX[f"x{_i}"] = _i
-_GPR_NAME_TO_INDEX["fp"] = 8  # s0/fp
 
 # Lazy-loaded GPR definitions (index -> GPRDef) for reset_value and access lookup.
 _GPR_DEFS: Optional[Dict[int, GPRDef]] = None
@@ -119,7 +77,7 @@ def _reg_to_index(reg: Union[int, str]) -> Optional[int]:
         if 0 <= reg <= 31:
             return reg
         return None
-    idx = _GPR_NAME_TO_INDEX.get(reg.lower())
+    idx = GPR_NAME_TO_INDEX.get(reg.lower())
     return idx
 
 
@@ -160,7 +118,7 @@ class RegisterContext:
         """Return the name for a register index: user-set name if any, else RISC-V ABI name (e.g. 'ra')."""
         if not 0 <= reg_index <= 31:
             return None
-        return self._entries.get(reg_index, {}).get("name") or _GPR_ABI_NAMES[reg_index]
+        return self._entries.get(reg_index, {}).get("name") or GPR_ABI_NAMES[reg_index]
 
     def get_value(self, reg_index: int) -> Optional[Any]:
         """Return the user-set value for a register index, or None."""
@@ -305,7 +263,9 @@ class InstructionInstance:
             op = self.instruction.operands.get(op_name)
             if op and op.type == "register":
                 operand_strs.append(
-                    f"f{value}" if self.instruction.is_operand_fpr(op_name) else f"x{value}"
+                    f"f{value}"
+                    if self.instruction.is_operand_fpr(op_name)
+                    else f"x{value}"
                 )
             else:
                 operand_strs.append(str(value))
