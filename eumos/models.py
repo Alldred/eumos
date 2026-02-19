@@ -103,6 +103,15 @@ class InstructionDef:
                 return True
         return False
 
+    def uses_rounding_mode_operand(self) -> bool:
+        """True if this instruction encodes rounding mode (rm) in funct3; operand_values should include 'rm'."""
+        if self.extension not in ("F", "D"):
+            return False
+        if "funct3" in (self.fixed_values or {}):
+            return False
+        fmt_name = getattr(self.format, "name", None) if self.format else None
+        return fmt_name in ("R", "R4")
+
     @property
     def memory_access_width(self) -> Optional[int]:
         """Alias for access_width (bits)."""
@@ -128,7 +137,7 @@ class InstructionDef:
         # F/D: classify by op_name and instruction semantics
         if is_load:
             if op_name == "rd":
-                return (False, True)   # FPR dest
+                return (False, True)  # FPR dest
             if op_name == "rs1":
                 return (True, False)  # GPR source (base)
             return None
@@ -136,23 +145,39 @@ class InstructionDef:
             if op_name == "rs2":
                 return (False, False)  # FPR source
             if op_name == "rs1":
-                return (True, False)   # GPR source (base)
+                return (True, False)  # GPR source (base)
             return None
 
         # rd is GPR dest for: compare, fclass, fcvt float->int, fmv.x
         rd_is_gpr = (
-            mnem.startswith("feq.") or mnem.startswith("flt.") or mnem.startswith("fle.")
+            mnem.startswith("feq.")
+            or mnem.startswith("flt.")
+            or mnem.startswith("fle.")
             or mnem.startswith("fclass.")
-            or mnem in ("fcvt.w.s", "fcvt.wu.s", "fcvt.w.d", "fcvt.wu.d",
-                        "fcvt.l.s", "fcvt.lu.s", "fcvt.l.d", "fcvt.lu.d")
+            or mnem
+            in (
+                "fcvt.w.s",
+                "fcvt.wu.s",
+                "fcvt.w.d",
+                "fcvt.wu.d",
+                "fcvt.l.s",
+                "fcvt.lu.s",
+                "fcvt.l.d",
+                "fcvt.lu.d",
+            )
             or mnem in ("fmv.x.w", "fmv.x.d")
         )
         # rs1 is GPR source for: fcvt int->float, fmv.w.x, fmv.d.x
-        rs1_is_gpr = (
-            mnem in ("fcvt.s.w", "fcvt.s.wu", "fcvt.s.l", "fcvt.s.lu",
-                     "fcvt.d.w", "fcvt.d.wu", "fcvt.d.l", "fcvt.d.lu")
-            or mnem in ("fmv.w.x", "fmv.d.x")
-        )
+        rs1_is_gpr = mnem in (
+            "fcvt.s.w",
+            "fcvt.s.wu",
+            "fcvt.s.l",
+            "fcvt.s.lu",
+            "fcvt.d.w",
+            "fcvt.d.wu",
+            "fcvt.d.l",
+            "fcvt.d.lu",
+        ) or mnem in ("fmv.w.x", "fmv.d.x")
 
         if op_name == "rd":
             return (rd_is_gpr, True)
@@ -204,6 +229,22 @@ class InstructionDef:
             role = self._register_operand_role(name)
             if role and not role[0] and role[1]:  # FPR, dest
                 out.append(name)
+        return out
+
+    def operand_register_bank(self, op_name: str) -> Optional[str]:
+        """Return the register bank for operand op_name: 'gpr', 'fpr', or None if not a register."""
+        role = self._register_operand_role(op_name)
+        if role is None:
+            return None
+        return "gpr" if role[0] else "fpr"
+
+    def operand_banks(self) -> Dict[str, str]:
+        """Return a dict of operand name -> 'gpr' or 'fpr' for all register operands."""
+        out: Dict[str, str] = {}
+        for name in self.operands:
+            bank = self.operand_register_bank(name)
+            if bank is not None:
+                out[name] = bank
         return out
 
 

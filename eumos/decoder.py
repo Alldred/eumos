@@ -217,10 +217,11 @@ class Decoder:
         funct3 = _extract_bits(word, 14, 12)
         funct7 = _extract_bits(word, 31, 25)
 
-        # Try to find instruction with full match first
+        # Try to find instruction with full match first; (opcode, None, funct7) for float R-type with variable rm
         instr = (
             self._lookup.get((opcode, funct3, funct7))
             or self._lookup.get((opcode, funct3, None))
+            or self._lookup.get((opcode, None, funct7))
             or self._lookup.get((opcode, None, None))
         )
 
@@ -230,6 +231,7 @@ class Decoder:
             for k in [
                 (opcode, funct3, funct7),
                 (opcode, funct3, None),
+                (opcode, None, funct7),
                 (opcode, None, None),
             ]:
                 if k in self._ambiguous_lookup:
@@ -255,6 +257,8 @@ class Decoder:
         if instr is None:
             return None
         operand_values = _decode_operand_values(word, instr)
+        if instr.uses_rounding_mode_operand():
+            operand_values["rm"] = operand_values.get("funct3")
         return InstructionInstance(
             instruction=instr,
             operand_values=operand_values,
@@ -326,6 +330,9 @@ class Decoder:
             operand_values = _parse_asm_operand_values(
                 instruction, operand_names, list(m.groups())
             )
+
+        if instruction.uses_rounding_mode_operand():
+            operand_values.setdefault("rm", 7)
 
         return InstructionInstance(
             instruction=instruction,

@@ -60,7 +60,16 @@ def test_eumos_float_extension():
     assert eu.fprs[0].abi_name == "ft0"
     float_instrs = eu.instructions_by_group("float")
     assert len(float_instrs) >= 60
-    for mnemonic in ("flw", "fsw", "fadd.s", "fadd.d", "fmadd.s", "fmadd.d", "fcvt.w.s", "fcvt.d.s"):
+    for mnemonic in (
+        "flw",
+        "fsw",
+        "fadd.s",
+        "fadd.d",
+        "fmadd.s",
+        "fmadd.d",
+        "fcvt.w.s",
+        "fcvt.d.s",
+    ):
         assert mnemonic in eu.instructions, f"missing {mnemonic}"
     assert "R4" in eu.formats
     for name in ("fflags", "frm", "fcsr"):
@@ -105,6 +114,13 @@ def test_gpr_fpr_operand_accessors():
     feq = eu.instructions["feq.s"]
     assert feq.gpr_dest_operands() == ["rd"]
     assert set(feq.fpr_source_operands()) == {"rs1", "rs2"}
+
+    # operand_register_bank / operand_banks: executor can choose get/set_fpr vs get/set_gpr from metadata
+    assert fadd.operand_register_bank("rd") == "fpr"
+    assert fadd.operand_register_bank("rs1") == "fpr"
+    assert feq.operand_register_bank("rd") == "gpr"
+    assert feq.operand_register_bank("rs1") == "fpr"
+    assert fadd.operand_banks() == {"rd": "fpr", "rs1": "fpr", "rs2": "fpr"}
 
     # Fixed rs2 (encoding-only): not a real FPR source
     fcvt_w_s = eu.instructions["fcvt.w.s"]

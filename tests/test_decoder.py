@@ -113,3 +113,43 @@ def test_register_decoder():
     assert rs1_info is not None and rs1_info.value == 2
     assert rs1_info.resolved_name == "sp"
     assert rs1_info.resolved_value == 0x8000
+
+
+def test_from_opc_fadd_s_binary_decodes():
+    """from_opc(0x00558553) decodes to fadd.s (was returning None before); operand_values include rm."""
+    dec = _decoder()
+    # 0x00558553: opcode=0x53, funct7=0, funct3=rm=0, rd=10, rs1=11, rs2=5
+    word = 0x00558553
+    instance = dec.from_opc(word)
+    assert instance is not None
+    assert instance.instruction.mnemonic == "fadd.s"
+    assert instance.operand_values["rd"] == 10
+    assert instance.operand_values["rs1"] == 11
+    assert instance.operand_values["rs2"] == 5
+    assert instance.operand_values["rm"] == 0
+
+
+def test_float_round_trip_with_rm():
+    """Float instructions with rm: from_asm -> to_opc -> from_opc round-trip and operand_values include rm."""
+    from eumos.encoder import encode_instruction
+
+    dec = _decoder()
+    # from_asm defaults rm=7 when not specified
+    inst = dec.from_asm("fadd.s fa0, fa1, fa0")
+    assert inst.operand_values.get("rm") == 7
+    opc = inst.to_opc()
+    inst2 = dec.from_opc(opc)
+    assert inst2 is not None
+    assert inst2.instruction.mnemonic == "fadd.s"
+    assert inst2.operand_values["rd"] == 10
+    assert inst2.operand_values["rs1"] == 11
+    assert inst2.operand_values["rs2"] == 10
+    assert inst2.operand_values["rm"] == 7
+
+    # Explicit rm in operand_values round-trips
+    inst3 = dec.from_asm("fadd.s f1, f2, f3")
+    inst3.operand_values["rm"] = 5
+    opc3 = encode_instruction(inst3.instruction, inst3.operand_values)
+    inst4 = dec.from_opc(opc3)
+    assert inst4 is not None
+    assert inst4.operand_values["rm"] == 5
