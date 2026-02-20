@@ -6,6 +6,8 @@ fullname: Immediate Type
 asm_formats:
   default:
     operands: [rd, rs1, imm]  # addi rd, rs1, imm
+  csr:
+    operands: [rd, imm, rs1]  # csrrw rd, csr, rs1
   offset_base:
     operands: [rd, imm, rs1]  # Offset-base: lw rd, imm(rs1)
     offset_base: true

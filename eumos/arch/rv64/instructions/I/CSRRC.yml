@@ -4,7 +4,7 @@
 name: CSRRC
 mnemonic: csrrc
 format: I
-asm_format: default
+asm_format: csr
 fixed_values:
   opcode: 0x73
   funct3: 0x3
