@@ -132,6 +132,35 @@ def test_decode_beq_fixed_opcode_negative_offset():
     assert instance.operand_values["rs1"] == rs1
     assert instance.operand_values["rs2"] == rs2
     assert instance.operand_values["imm"] == imm
+
+
+def test_decode_shift_immediate_rv64_shamt_6bit():
+    """RV64 shift-immediate decode keeps shamt[5] and operation identity."""
+    dec = _decoder()
+    # srli x1, x2, 63
+    srli = dec.from_opc(0x03F15093)
+    assert srli is not None
+    assert srli.instruction.mnemonic == "srli"
+    assert srli.operand_values["imm"] == 63
+    # srai x1, x2, 63
+    srai = dec.from_opc(0x43F15093)
+    assert srai is not None
+    assert srai.instruction.mnemonic == "srai"
+    assert srai.operand_values["imm"] == 63
+
+
+def test_decode_csr_immediate_is_unsigned():
+    """CSR address immediate is decoded as unsigned 12-bit."""
+    dec = _decoder()
+    # csrrw x1, x2, 0xC00
+    instance = dec.from_opc(0xC00110F3)
+    assert instance is not None
+    assert instance.instruction.mnemonic == "csrrw"
+    assert instance.operand_values["imm"] == 0xC00
+    assert instance.operand_values["rd"] == 1
+    assert instance.operand_values["rs1"] == 2
+
+
 def test_decode_unknown_returns_none():
     """Unknown opcode returns None."""
     dec = _decoder()
