@@ -99,6 +99,39 @@ def test_decode_beq_fixed_opcode_offset():
     assert instance.operand_values["imm"] == 4
 
 
+def test_decode_beq_fixed_opcode_negative_offset():
+    """Negative B-type immediate is sign-extended from encoded branch offset."""
+    dec = _decoder()
+    # Encode: beq x1 (ra), x2 (sp), -4
+    # B-type immediate layout:
+    #   imm[11] at bit 7
+    #   imm[4:1] at bits 11–8
+    #   imm[10:5] at bits 30–25
+    #   imm[12] at bit 31
+    rs1 = 1
+    rs2 = 2
+    imm = -4
+    opcode = 0x63
+    funct3 = 0
+    imm12 = (imm >> 12) & 0x1
+    imm10_5 = (imm >> 5) & 0x3F
+    imm4_1 = (imm >> 1) & 0xF
+    imm11 = (imm >> 11) & 0x1
+    word = 0
+    word |= opcode
+    word |= funct3 << 12
+    word |= rs1 << 15
+    word |= rs2 << 20
+    word |= imm11 << 7
+    word |= imm4_1 << 8
+    word |= imm10_5 << 25
+    word |= imm12 << 31
+    instance = dec.from_opc(word)
+    assert instance is not None
+    assert instance.instruction.mnemonic == "beq"
+    assert instance.operand_values["rs1"] == rs1
+    assert instance.operand_values["rs2"] == rs2
+    assert instance.operand_values["imm"] == imm
 def test_decode_unknown_returns_none():
     """Unknown opcode returns None."""
     dec = _decoder()
