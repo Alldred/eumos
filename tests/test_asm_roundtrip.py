@@ -16,9 +16,9 @@ from eumos.decoder import Decoder
         ("sll x3, x4, x5", 0x33 | (3 << 7) | (1 << 12) | (4 << 15) | (5 << 20)),
         ("sd x6, 8(x7)", 0x23 | (7 << 15) | (3 << 12) | (6 << 20) | (8 << 7)),
         # B-type: beq with 8-byte offset
-        ("beq x1, x2, 8", 0x00208263),
+        ("beq x1, x2, 8", 0x00208463),
         # J-type: jal with 12-byte offset
-        ("jal x1, 12", 0x006000EF),
+        ("jal x1, 12", 0x00C000EF),
     ],
 )
 def test_asm_instance_opcode_roundtrip(asm_str, expected_opcode):

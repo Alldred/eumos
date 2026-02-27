@@ -84,6 +84,102 @@ def test_encode_instruction_j_type():
     assert opc_direct == opc_instance
 
 
+def test_encode_instruction_j_type_fixed_opcode():
+    """J-type fixed opcodes are encoded correctly for positive and negative offsets."""
+    instructions = instruction_loader.load_all_instructions()
+    instr = instructions["jal"]
+    assert encode_instruction(instr, {"rd": 0, "imm": 44}) == 0x02C0006F
+    assert encode_instruction(instr, {"rd": 0, "imm": -4}) == 0xFFDFF06F
+
+
+def test_encode_instruction_b_type_fixed_opcode():
+    """B-type fixed opcode is encoded correctly for positive and negative offsets."""
+    instructions = instruction_loader.load_all_instructions()
+    instr = instructions["beq"]
+    assert encode_instruction(instr, {"rs1": 1, "rs2": 2, "imm": 4}) == 0x00208263
+    assert encode_instruction(instr, {"rs1": 1, "rs2": 2, "imm": -4}) == 0xFE208EE3
+
+
+def test_encode_instruction_b_type_boundary_offsets():
+    """B-type boundary offsets encode per spec."""
+    instructions = instruction_loader.load_all_instructions()
+    instr = instructions["beq"]
+    # Most-negative branch offset (-4096 bytes)
+    assert encode_instruction(instr, {"rs1": 1, "rs2": 2, "imm": -4096}) == 0x80208063
+    # Largest positive branch offset (4094 bytes)
+    assert encode_instruction(instr, {"rs1": 1, "rs2": 2, "imm": 4094}) == 0x7E208FE3
+
+
+def test_encode_instruction_j_type_boundary_offsets():
+    """J-type boundary offsets encode per spec."""
+    instructions = instruction_loader.load_all_instructions()
+    instr = instructions["jal"]
+    # Most-negative jump offset (-1048576 bytes)
+    assert encode_instruction(instr, {"rd": 0, "imm": -1048576}) == 0x8000006F
+    # Largest positive jump offset (1048574 bytes)
+    assert encode_instruction(instr, {"rd": 0, "imm": 1048574}) == 0x7FFFF06F
+
+
+def test_encode_instruction_shift_immediates_preserve_operation():
+    """Shift-immediate opcodes include required upper immediate bits (e.g. SRAI/SRAIW)."""
+    instructions = instruction_loader.load_all_instructions()
+    assert (
+        encode_instruction(instructions["srai"], {"rd": 1, "rs1": 2, "imm": 1})
+        == 0x40115093
+    )
+    assert (
+        encode_instruction(instructions["srai"], {"rd": 1, "rs1": 2, "imm": 63})
+        == 0x43F15093
+    )
+    assert (
+        encode_instruction(instructions["sraiw"], {"rd": 1, "rs1": 2, "imm": 1})
+        == 0x4011509B
+    )
+
+
+def test_encode_instruction_i_type_immediate_out_of_range_raises():
+    """I-type immediates outside signed 12-bit range are rejected."""
+    instructions = instruction_loader.load_all_instructions()
+    instr = instructions["addi"]
+    with pytest.raises(ValueError, match="I-type immediate .* out of range"):
+        encode_instruction(instr, {"rd": 1, "rs1": 2, "imm": 4096})
+    with pytest.raises(ValueError, match="I-type immediate .* out of range"):
+        encode_instruction(instr, {"rd": 1, "rs1": 2, "imm": -2049})
+
+
+def test_encode_instruction_branch_jump_out_of_range_raise():
+    """B/J immediates outside architectural range are rejected."""
+    instructions = instruction_loader.load_all_instructions()
+    beq = instructions["beq"]
+    jal = instructions["jal"]
+    with pytest.raises(ValueError, match="B-type immediate offset .* out of range"):
+        encode_instruction(beq, {"rs1": 1, "rs2": 2, "imm": 4096})
+    with pytest.raises(ValueError, match="B-type immediate offset .* out of range"):
+        encode_instruction(beq, {"rs1": 1, "rs2": 2, "imm": -4098})
+    with pytest.raises(ValueError, match="J-type immediate offset .* out of range"):
+        encode_instruction(jal, {"rd": 1, "imm": 1048576})
+    with pytest.raises(ValueError, match="J-type immediate offset .* out of range"):
+        encode_instruction(jal, {"rd": 1, "imm": -1048578})
+
+
+def test_encode_instruction_shift_immediate_range_raises():
+    """Shift-immediate amount range is enforced per instruction."""
+    instructions = instruction_loader.load_all_instructions()
+    with pytest.raises(ValueError, match="SLLI shift amount .* out of range"):
+        encode_instruction(instructions["slli"], {"rd": 1, "rs1": 2, "imm": 64})
+    with pytest.raises(ValueError, match="SRAIW shift amount .* out of range"):
+        encode_instruction(instructions["sraiw"], {"rd": 1, "rs1": 2, "imm": 32})
+
+
+def test_encode_instruction_csr_immediate_unsigned_range():
+    """CSR immediate is treated as unsigned 12-bit value."""
+    instructions = instruction_loader.load_all_instructions()
+    csrrw = instructions["csrrw"]
+    assert encode_instruction(csrrw, {"rd": 1, "rs1": 2, "imm": 0xC00}) == 0xC00110F3
+    with pytest.raises(ValueError, match="CSR immediate .* out of range"):
+        encode_instruction(csrrw, {"rd": 1, "rs1": 2, "imm": 0x1000})
+
+
 def test_encode_instruction_invalid_register_index_too_high():
     """encode_instruction rejects register index > 31."""
     instructions = instruction_loader.load_all_instructions()

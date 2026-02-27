@@ -7,6 +7,16 @@ from typing import Any, Dict
 
 from .models import FieldEncoding, InstructionDef
 
+_SHIFT_IMM_SPECS = {
+    # mnemonic: (shamt_bits, upper_imm_prefix)
+    "slli": (6, 0x000),
+    "srli": (6, 0x000),
+    "srai": (6, 0x400),
+    "slliw": (5, 0x000),
+    "srliw": (5, 0x000),
+    "sraiw": (5, 0x400),
+}
+
 
 def _insert_bits(word: int, value: int, msb: int, lsb: int) -> int:
     """Insert value into word at bits [msb:lsb] inclusive."""
@@ -21,20 +31,88 @@ def _immediate_to_raw(value: int, format_name: str) -> int:
     if format_name in ("I", "S"):
         return value & 0xFFF
     if format_name == "B":
-        # value is byte offset (multiple of 2); 13-bit signed
-        return (value >> 1) & 0x1FFF
+        # value is signed branch byte offset with bit0 implied 0 in encoding
+        return value & 0x1FFF
     if format_name == "J":
-        # value is byte offset (multiple of 2); 21-bit signed
-        return (value >> 1) & 0x1FFFFF
+        # value is signed jump byte offset with bit0 implied 0 in encoding
+        return value & 0x1FFFFF
     if format_name == "U":
         return value & 0xFFFFF
     return value & 0xFFF
 
 
-def _encode_field_value(value: Any, encoding: FieldEncoding, format_name: str) -> int:
+def _is_csr_immediate_instruction(instruction: InstructionDef, field_name: str) -> bool:
+    if field_name != "imm":
+        return False
+    opcode = (instruction.fixed_values or {}).get("opcode")
+    return opcode == 0x73 and instruction.mnemonic.startswith("csr")
+
+
+def _encode_shift_immediate_raw(
+    instruction: InstructionDef, field_name: str, val: int
+) -> int | None:
+    if field_name != "imm":
+        return None
+    spec = _SHIFT_IMM_SPECS.get(instruction.mnemonic)
+    if spec is None:
+        return None
+    shamt_bits, prefix = spec
+    max_shamt = (1 << shamt_bits) - 1
+    if not 0 <= val <= max_shamt:
+        raise ValueError(
+            f"{instruction.mnemonic.upper()} shift amount {val} out of range 0..{max_shamt}"
+        )
+    return prefix | val
+
+
+def _validate_immediate_range(
+    val: int, format_name: str, instruction: InstructionDef, field_name: str
+) -> None:
+    if field_name != "imm":
+        return
+    if format_name == "I":
+        if _is_csr_immediate_instruction(instruction, field_name):
+            if not 0 <= val <= 0xFFF:
+                raise ValueError(
+                    f"CSR immediate {val} out of range 0..4095 for {instruction.mnemonic}"
+                )
+        elif not -2048 <= val <= 2047:
+            raise ValueError(
+                f"I-type immediate {val} out of range [-2048, 2047] for {instruction.mnemonic}"
+            )
+    elif format_name == "S":
+        if not -2048 <= val <= 2047:
+            raise ValueError(
+                f"S-type immediate {val} out of range [-2048, 2047] for {instruction.mnemonic}"
+            )
+    elif format_name == "B":
+        if not -4096 <= val <= 4094:
+            raise ValueError(
+                f"B-type immediate offset {val} out of range [-4096, 4094] for {instruction.mnemonic}"
+            )
+    elif format_name == "J":
+        if not -1048576 <= val <= 1048574:
+            raise ValueError(
+                f"J-type immediate offset {val} out of range [-1048576, 1048574] for {instruction.mnemonic}"
+            )
+
+
+def _encode_field_value(
+    value: Any,
+    encoding: FieldEncoding,
+    format_name: str,
+    *,
+    instruction: InstructionDef,
+    field_name: str,
+) -> int:
     """Encode one field value into raw bits for insertion."""
     if encoding.type == "immediate":
         val = int(value)
+        shift_raw = _encode_shift_immediate_raw(instruction, field_name, val)
+        if shift_raw is not None:
+            raw = shift_raw
+        else:
+            _validate_immediate_range(val, format_name, instruction, field_name)
         if format_name == "B":
             if val % 2 != 0:
                 raise ValueError(
@@ -45,7 +123,8 @@ def _encode_field_value(value: Any, encoding: FieldEncoding, format_name: str) -
                 raise ValueError(
                     f"J-type immediate offset {val} is not 2-byte aligned and cannot be encoded"
                 )
-        raw = _immediate_to_raw(val, format_name)
+        if shift_raw is None:
+            raw = _immediate_to_raw(val, format_name)
     elif encoding.type == "register":
         if not isinstance(value, int):
             raise ValueError(
@@ -70,7 +149,11 @@ def _encode_field_value(value: Any, encoding: FieldEncoding, format_name: str) -
     return raw
 
 
-def _encode_parts(word: int, raw_value: int, encoding: FieldEncoding) -> int:
+def _encode_parts(
+    word: int,
+    raw_value: int,
+    encoding: FieldEncoding,
+) -> int:
     """Insert split immediate into word per encoding.parts."""
     if not encoding.parts:
         return word
@@ -112,10 +195,22 @@ def encode_instruction(
             continue
 
         if encoding.parts:
-            raw = _encode_field_value(val, encoding, fmt_name)
+            raw = _encode_field_value(
+                val,
+                encoding,
+                fmt_name,
+                instruction=instruction,
+                field_name=name,
+            )
             word = _encode_parts(word, raw, encoding)
         elif encoding.bits is not None:
-            raw = _encode_field_value(val, encoding, fmt_name)
+            raw = _encode_field_value(
+                val,
+                encoding,
+                fmt_name,
+                instruction=instruction,
+                field_name=name,
+            )
             bits = encoding.bits
             if len(bits) == 2:
                 msb, lsb = bits

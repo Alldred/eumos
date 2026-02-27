@@ -16,6 +16,15 @@ from .instance import InstructionInstance
 from .instruction_loader import load_all_instructions
 from .models import FieldEncoding, InstructionDef
 
+_SHIFT_IMM_WIDTHS = {
+    "slli": 6,
+    "srli": 6,
+    "srai": 6,
+    "slliw": 5,
+    "srliw": 5,
+    "sraiw": 5,
+}
+
 
 def _extract_bits(word: int, msb: int, lsb: int) -> int:
     """Extract bits [msb, lsb] from word (inclusive; RISC-V bit 0 is LSB)."""
@@ -124,15 +133,33 @@ def _immediate_decoded_value(raw: int, format_name: str, field_name: str) -> int
     if format_name == "S":
         return _sign_extend(raw & 0xFFF, 12)
     if format_name == "B":
-        # 13-bit signed, scaled by 2
-        return _sign_extend(raw & 0x1FFF, 13) * 2
+        # 13-bit signed branch byte offset with bit0 implied 0 in encoding.
+        return _sign_extend(raw & 0x1FFF, 13)
     if format_name == "J":
-        # 21-bit signed, scaled by 2
-        return _sign_extend(raw & 0x1FFFFF, 21) * 2
+        # 21-bit signed jump byte offset with bit0 implied 0 in encoding.
+        return _sign_extend(raw & 0x1FFFFF, 21)
     if format_name == "U":
         # 20-bit at [31:12], no sign extension (value as encoded)
         return raw & 0xFFFFF
     return raw
+
+
+def _is_csr_immediate_instruction(instruction: InstructionDef, field_name: str) -> bool:
+    if field_name != "imm":
+        return False
+    opcode = (instruction.fixed_values or {}).get("opcode")
+    return opcode == 0x73 and instruction.mnemonic.startswith("csr")
+
+
+def _decode_i_immediate(raw: int, instruction: InstructionDef, field_name: str) -> int:
+    if field_name != "imm":
+        return _sign_extend(raw & 0xFFF, 12)
+    shamt_bits = _SHIFT_IMM_WIDTHS.get(instruction.mnemonic)
+    if shamt_bits is not None:
+        return raw & ((1 << shamt_bits) - 1)
+    if _is_csr_immediate_instruction(instruction, field_name):
+        return raw & 0xFFF
+    return _sign_extend(raw & 0xFFF, 12)
 
 
 def _decode_operand_values(word: int, instruction: InstructionDef) -> Dict[str, Any]:
@@ -144,7 +171,10 @@ def _decode_operand_values(word: int, instruction: InstructionDef) -> Dict[str, 
         if raw is None:
             continue
         if encoding.type == "immediate":
-            values[name] = _immediate_decoded_value(raw, fmt_name, name)
+            if fmt_name == "I":
+                values[name] = _decode_i_immediate(raw, instruction, name)
+            else:
+                values[name] = _immediate_decoded_value(raw, fmt_name, name)
         else:
             values[name] = raw
     return values
@@ -224,6 +254,9 @@ class Decoder:
             or self._lookup.get((opcode, None, funct7))
             or self._lookup.get((opcode, None, None))
         )
+        # RV64 shift-immediate encodings vary bit 25 with shamt[5], so exact funct7 lookup may miss valid opcodes.
+        if instr is None and opcode in (0x13, 0x1B) and funct3 in (0x1, 0x5):
+            instr = self._lookup.get((opcode, funct3, funct7 & 0x7E))
 
         # If we found a match, check if there are ambiguous alternatives (same opcode/funct3, different imm/rs2/etc.)
         if instr is not None:
