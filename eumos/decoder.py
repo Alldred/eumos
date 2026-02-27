@@ -124,11 +124,11 @@ def _immediate_decoded_value(raw: int, format_name: str, field_name: str) -> int
     if format_name == "S":
         return _sign_extend(raw & 0xFFF, 12)
     if format_name == "B":
-        # 13-bit signed, scaled by 2
-        return _sign_extend(raw & 0x1FFF, 13) * 2
+        # 13-bit signed branch byte offset with bit0 implied 0 in encoding.
+        return _sign_extend(raw & 0x1FFF, 13)
     if format_name == "J":
-        # 21-bit signed, scaled by 2
-        return _sign_extend(raw & 0x1FFFFF, 21) * 2
+        # 21-bit signed jump byte offset with bit0 implied 0 in encoding.
+        return _sign_extend(raw & 0x1FFFFF, 21)
     if format_name == "U":
         # 20-bit at [31:12], no sign extension (value as encoded)
         return raw & 0xFFFFF

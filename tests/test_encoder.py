@@ -84,6 +84,21 @@ def test_encode_instruction_j_type():
     assert opc_direct == opc_instance
 
 
+def test_encode_instruction_j_type_fixed_opcode():
+    """J-type fixed opcodes are encoded correctly for positive and negative offsets."""
+    instructions = instruction_loader.load_all_instructions()
+    instr = instructions["jal"]
+    assert encode_instruction(instr, {"rd": 0, "imm": 44}) == 0x02C0006F
+    assert encode_instruction(instr, {"rd": 0, "imm": -4}) == 0xFFDFF06F
+
+
+def test_encode_instruction_b_type_fixed_opcode():
+    """B-type fixed opcode is encoded correctly."""
+    instructions = instruction_loader.load_all_instructions()
+    instr = instructions["beq"]
+    assert encode_instruction(instr, {"rs1": 1, "rs2": 2, "imm": 4}) == 0x00208263
+
+
 def test_encode_instruction_invalid_register_index_too_high():
     """encode_instruction rejects register index > 31."""
     instructions = instruction_loader.load_all_instructions()

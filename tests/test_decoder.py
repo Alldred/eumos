@@ -65,6 +65,40 @@ def test_decode_sd_s_type_split_imm():
     assert instance.operand_values["imm"] == 8
 
 
+def test_decode_jal_fixed_opcode_positive_offset():
+    """J-type immediate from fixed opcode decodes to correct byte offset."""
+    dec = _decoder()
+    # Verified with objdump: 0x02c0006f => j 0x2c
+    instance = dec.from_opc(0x02C0006F)
+    assert instance is not None
+    assert instance.instruction.mnemonic == "jal"
+    assert instance.operand_values["rd"] == 0
+    assert instance.operand_values["imm"] == 44
+
+
+def test_decode_jal_fixed_opcode_negative_offset():
+    """Negative J-type immediate is sign-extended from fixed opcode."""
+    dec = _decoder()
+    # Verified with objdump: 0xffdff06f => j -4
+    instance = dec.from_opc(0xFFDFF06F)
+    assert instance is not None
+    assert instance.instruction.mnemonic == "jal"
+    assert instance.operand_values["rd"] == 0
+    assert instance.operand_values["imm"] == -4
+
+
+def test_decode_beq_fixed_opcode_offset():
+    """B-type immediate from fixed opcode decodes to correct byte offset."""
+    dec = _decoder()
+    # Verified with objdump: 0x00208263 => beq ra, sp, 4
+    instance = dec.from_opc(0x00208263)
+    assert instance is not None
+    assert instance.instruction.mnemonic == "beq"
+    assert instance.operand_values["rs1"] == 1
+    assert instance.operand_values["rs2"] == 2
+    assert instance.operand_values["imm"] == 4
+
+
 def test_decode_unknown_returns_none():
     """Unknown opcode returns None."""
     dec = _decoder()

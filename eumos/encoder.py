@@ -21,11 +21,11 @@ def _immediate_to_raw(value: int, format_name: str) -> int:
     if format_name in ("I", "S"):
         return value & 0xFFF
     if format_name == "B":
-        # value is byte offset (multiple of 2); 13-bit signed
-        return (value >> 1) & 0x1FFF
+        # value is signed branch byte offset with bit0 implied 0
+        return value & 0x1FFF
     if format_name == "J":
-        # value is byte offset (multiple of 2); 21-bit signed
-        return (value >> 1) & 0x1FFFFF
+        # value is signed jump byte offset with bit0 implied 0
+        return value & 0x1FFFFF
     if format_name == "U":
         return value & 0xFFFFF
     return value & 0xFFF
@@ -70,7 +70,11 @@ def _encode_field_value(value: Any, encoding: FieldEncoding, format_name: str) -
     return raw
 
 
-def _encode_parts(word: int, raw_value: int, encoding: FieldEncoding) -> int:
+def _encode_parts(
+    word: int,
+    raw_value: int,
+    encoding: FieldEncoding,
+) -> int:
     """Insert split immediate into word per encoding.parts."""
     if not encoding.parts:
         return word
