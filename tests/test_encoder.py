@@ -8,6 +8,7 @@ import pytest
 from eumos import instruction_loader
 from eumos.decoder import Decoder
 from eumos.encoder import encode_instruction
+from eumos.instance import InstructionInstance
 
 
 def _instance_opc(asm_str: str) -> int:
@@ -218,3 +219,42 @@ def test_encode_instruction_j_type_misalignment():
     instr = instructions["jal"]
     with pytest.raises(ValueError, match="J-type immediate offset.*not 2-byte aligned"):
         encode_instruction(instr, {"rd": 1, "imm": 11})
+
+
+def test_encode_instruction_raw_mode_accepts_wrapped_i_type_bits():
+    """Raw mode accepts immediate bit-patterns without semantic range checks."""
+    instructions = instruction_loader.load_all_instructions()
+    instr = instructions["addi"]
+    wrapped_neg_879 = 18446744073709550737  # two's complement bit pattern for -879
+    opc_raw = encode_instruction(
+        instr,
+        {"rd": 1, "rs1": 2, "imm": wrapped_neg_879},
+        immediate_mode="raw",
+    )
+    opc_sem = encode_instruction(instr, {"rd": 1, "rs1": 2, "imm": -879})
+    assert opc_raw == opc_sem
+
+
+def test_encode_instruction_raw_mode_uses_exact_shift_immediate_bits():
+    """Raw mode bypasses shift-immediate semantic prefixing and uses provided bits directly."""
+    instructions = instruction_loader.load_all_instructions()
+    instr = instructions["srai"]
+    # srai x1, x2, 1 in semantic mode has imm bits 0x401.
+    opc_sem = encode_instruction(instr, {"rd": 1, "rs1": 2, "imm": 1})
+    opc_raw = encode_instruction(
+        instr, {"rd": 1, "rs1": 2, "imm": 0x401}, immediate_mode="raw"
+    )
+    assert opc_raw == opc_sem
+
+
+def test_instruction_instance_to_opc_supports_raw_mode():
+    """InstructionInstance.to_opc exposes immediate_mode for explicit raw encoding."""
+    instructions = instruction_loader.load_all_instructions()
+    inst = InstructionInstance(
+        instruction=instructions["addi"],
+        operand_values={"rd": 1, "rs1": 2, "imm": 18446744073709550737},
+    )
+    opc = inst.to_opc(immediate_mode="raw")
+    assert opc == encode_instruction(
+        instructions["addi"], {"rd": 1, "rs1": 2, "imm": -879}
+    )
