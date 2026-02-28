@@ -4,7 +4,7 @@
 """User data layered on ISA: instruction instances, register context, and operand-level combined view."""
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, Iterator, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, Iterator, Literal, Optional, Tuple, Union
 
 from .constants import FPR_NAME_TO_INDEX, GPR_ABI_NAMES, GPR_NAME_TO_INDEX
 from .encoder import encode_instruction
@@ -295,9 +295,18 @@ class InstructionInstance:
         """Alias for to_asm() for backwards compatibility."""
         return self.to_asm()
 
-    def to_opc(self) -> int:
-        """Pack this instruction instance into a 32-bit opcode."""
-        return encode_instruction(self.instruction, self.operand_values)
+    def to_opc(self, *, immediate_mode: Literal["semantic", "raw"] = "semantic") -> int:
+        """Pack this instruction instance into a 32-bit opcode.
+
+        immediate_mode:
+          - "semantic" (default): validate/encode architectural immediates.
+          - "raw": treat immediate operands as raw encoded bitfields.
+        """
+        return encode_instruction(
+            self.instruction,
+            self.operand_values,
+            immediate_mode=immediate_mode,
+        )
 
     def gpr_sources(self) -> Dict[str, Any]:
         """GPR (integer) source operand names -> decoded values. E.g. {'rs1': 2} for base register."""

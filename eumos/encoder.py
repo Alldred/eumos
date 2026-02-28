@@ -3,7 +3,7 @@
 
 """Encode instruction operand values into a 32-bit RISC-V opcode."""
 
-from typing import Any, Dict
+from typing import Any, Dict, Literal
 
 from .models import FieldEncoding, InstructionDef
 
@@ -39,6 +39,19 @@ def _immediate_to_raw(value: int, format_name: str) -> int:
     if format_name == "U":
         return value & 0xFFFFF
     return value & 0xFFF
+
+
+def _immediate_raw_width(format_name: str) -> int:
+    """Return encoded immediate field width for a format."""
+    if format_name in ("I", "S"):
+        return 12
+    if format_name == "B":
+        return 13
+    if format_name == "J":
+        return 21
+    if format_name == "U":
+        return 20
+    return 12
 
 
 def _is_csr_immediate_instruction(instruction: InstructionDef, field_name: str) -> bool:
@@ -104,27 +117,32 @@ def _encode_field_value(
     *,
     instruction: InstructionDef,
     field_name: str,
+    immediate_mode: Literal["semantic", "raw"],
 ) -> int:
     """Encode one field value into raw bits for insertion."""
     if encoding.type == "immediate":
         val = int(value)
-        shift_raw = _encode_shift_immediate_raw(instruction, field_name, val)
-        if shift_raw is not None:
-            raw = shift_raw
+        if immediate_mode == "raw":
+            width = _immediate_raw_width(format_name)
+            raw = val & ((1 << width) - 1)
         else:
-            _validate_immediate_range(val, format_name, instruction, field_name)
-        if format_name == "B":
-            if val % 2 != 0:
-                raise ValueError(
-                    f"B-type immediate offset {val} is not 2-byte aligned and cannot be encoded"
-                )
-        elif format_name == "J":
-            if val % 2 != 0:
-                raise ValueError(
-                    f"J-type immediate offset {val} is not 2-byte aligned and cannot be encoded"
-                )
-        if shift_raw is None:
-            raw = _immediate_to_raw(val, format_name)
+            shift_raw = _encode_shift_immediate_raw(instruction, field_name, val)
+            if shift_raw is not None:
+                raw = shift_raw
+            else:
+                _validate_immediate_range(val, format_name, instruction, field_name)
+            if format_name == "B":
+                if val % 2 != 0:
+                    raise ValueError(
+                        f"B-type immediate offset {val} is not 2-byte aligned and cannot be encoded"
+                    )
+            elif format_name == "J":
+                if val % 2 != 0:
+                    raise ValueError(
+                        f"J-type immediate offset {val} is not 2-byte aligned and cannot be encoded"
+                    )
+            if shift_raw is None:
+                raw = _immediate_to_raw(val, format_name)
     elif encoding.type == "register":
         if not isinstance(value, int):
             raise ValueError(
@@ -176,9 +194,21 @@ def _encode_parts(
 
 
 def encode_instruction(
-    instruction: InstructionDef, operand_values: Dict[str, Any]
+    instruction: InstructionDef,
+    operand_values: Dict[str, Any],
+    *,
+    immediate_mode: Literal["semantic", "raw"] = "semantic",
 ) -> int:
-    """Encode an instruction with given operand values to a 32-bit opcode."""
+    """Encode an instruction with given operand values to a 32-bit opcode.
+
+    immediate_mode:
+      - "semantic" (default): validate/encode architectural immediates.
+      - "raw": treat immediate operands as raw encoded bitfields (masked to field width).
+    """
+    if immediate_mode not in {"semantic", "raw"}:
+        raise ValueError(
+            f"Invalid immediate_mode {immediate_mode!r}; expected 'semantic' or 'raw'"
+        )
     word = 0
     fmt_name = instruction.format.name if instruction.format else "I"
     fv = instruction.fixed_values or {}
@@ -201,6 +231,7 @@ def encode_instruction(
                 fmt_name,
                 instruction=instruction,
                 field_name=name,
+                immediate_mode=immediate_mode,
             )
             word = _encode_parts(word, raw, encoding)
         elif encoding.bits is not None:
@@ -210,6 +241,7 @@ def encode_instruction(
                 fmt_name,
                 instruction=instruction,
                 field_name=name,
+                immediate_mode=immediate_mode,
             )
             bits = encoding.bits
             if len(bits) == 2:
