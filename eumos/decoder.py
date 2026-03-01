@@ -9,6 +9,7 @@ immediates, etc.).
 """
 
 import re
+from functools import lru_cache
 from typing import Any, Dict, List, Optional, Tuple
 
 from .constants import FPR_NAME_TO_INDEX
@@ -382,3 +383,34 @@ class Decoder:
             register_context=register_context,
             pc=pc,
         )
+
+
+@lru_cache(maxsize=1)
+def _default_decoder() -> Decoder:
+    """Process-local default decoder reused by module helpers."""
+    return Decoder()
+
+
+def validate_opcode(
+    word: int,
+    *,
+    decoder: Optional[Decoder] = None,
+    instructions: Optional[Dict[str, InstructionDef]] = None,
+) -> int:
+    """Validate that a 32-bit opcode is decodable by Eumos.
+
+    Returns the masked 32-bit opcode when valid, otherwise raises ``ValueError``.
+    """
+    if decoder is not None and instructions is not None:
+        raise ValueError("Pass either decoder or instructions, not both.")
+    dec = decoder
+    if dec is None:
+        dec = (
+            Decoder(instructions=instructions)
+            if instructions is not None
+            else _default_decoder()
+        )
+    masked = word & 0xFFFF_FFFF
+    if dec.from_opc(masked) is None:
+        raise ValueError(f"Unknown/invalid opcode encoding: 0x{masked:08x}")
+    return masked

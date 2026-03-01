@@ -5,6 +5,7 @@
 
 __all__ = [
     "Eumos",
+    "validate_opcode",
     "ExceptionCauseDef",
     "load_all_csrs",
     "load_all_exception_causes",
@@ -27,6 +28,7 @@ __all__ = [
 ]
 
 from .csr_loader import load_all_csrs
+from .decoder import validate_opcode
 from .eumos import Eumos
 from .exception_loader import load_all_exception_causes
 from .format_loader import load_all_formats
