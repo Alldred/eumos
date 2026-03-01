@@ -20,6 +20,29 @@ mapping:
     required: false
     sequence:
       - type: str
+  operand_aliases:
+    type: map
+    required: false
+    matching-rule: any
+    mapping:
+      regex;(.*):
+        type: seq
+        required: false
+        sequence:
+          - type: str
+  immediate_encoding:
+    type: map
+    required: false
+    matching-rule: any
+    mapping:
+      regex;(.*):
+        type: map
+        required: false
+        allowempty: false
+        mapping:
+          mode: {type: str, required: true}
+          width: {type: int, required: true}
+          prefix: {type: int, required: false}
   description: {type: str, required: false}
   imm: {type: any, required: false}
   extension: {type: str, required: true}

@@ -7,15 +7,38 @@ from typing import Any, Dict, Literal
 
 from .models import FieldEncoding, InstructionDef
 
-_SHIFT_IMM_SPECS = {
-    # mnemonic: (shamt_bits, upper_imm_prefix)
-    "slli": (6, 0x000),
-    "srli": (6, 0x000),
-    "srai": (6, 0x400),
-    "slliw": (5, 0x000),
-    "srliw": (5, 0x000),
-    "sraiw": (5, 0x400),
-}
+
+def _coerce_alias_int(alias_name: str, value: Any) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            f"Immediate alias {alias_name!r} must be int-compatible, got {value!r}"
+        ) from exc
+
+
+def _normalize_immediate_operands(
+    instruction: InstructionDef, operand_values: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Map immediate aliases from instruction metadata to canonical immediate names."""
+    normalized = dict(operand_values)
+    for alias_name, canonical_name in (instruction.operand_alias_lookup or {}).items():
+        alias_raw = operand_values.get(alias_name)
+        if alias_raw is None:
+            continue
+        alias_value = _coerce_alias_int(alias_name, alias_raw)
+        direct_value = normalized.get(canonical_name)
+        if direct_value is None:
+            normalized[canonical_name] = alias_value
+            continue
+        direct_int = _coerce_alias_int(canonical_name, direct_value)
+        if direct_int != alias_value:
+            raise ValueError(
+                f"Conflicting immediate values for {instruction.mnemonic}: "
+                f"{canonical_name}={direct_value} and alias={alias_value}"
+            )
+
+    return normalized
 
 
 def _insert_bits(word: int, value: int, msb: int, lsb: int) -> int:
@@ -64,12 +87,11 @@ def _is_csr_immediate_instruction(instruction: InstructionDef, field_name: str) 
 def _encode_shift_immediate_raw(
     instruction: InstructionDef, field_name: str, val: int
 ) -> int | None:
-    if field_name != "imm":
+    spec = (instruction.immediate_encoding or {}).get(field_name)
+    if not spec or spec.get("mode") != "shift":
         return None
-    spec = _SHIFT_IMM_SPECS.get(instruction.mnemonic)
-    if spec is None:
-        return None
-    shamt_bits, prefix = spec
+    shamt_bits = int(spec["width"])
+    prefix = int(spec.get("prefix", 0))
     max_shamt = (1 << shamt_bits) - 1
     if not 0 <= val <= max_shamt:
         raise ValueError(
@@ -209,6 +231,7 @@ def encode_instruction(
         raise ValueError(
             f"Invalid immediate_mode {immediate_mode!r}; expected 'semantic' or 'raw'"
         )
+    operand_values = _normalize_immediate_operands(instruction, operand_values)
     word = 0
     fmt_name = instruction.format.name if instruction.format else "I"
     fv = instruction.fixed_values or {}
