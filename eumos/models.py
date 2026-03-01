@@ -7,6 +7,64 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 
+def _field_immediate_width(
+    encoding: Optional["FieldEncoding"], *, fallback_size_bits: int
+) -> int:
+    """Derive immediate width from field encoding metadata."""
+    fallback = max(1, int(fallback_size_bits))
+    if encoding is None:
+        return fallback
+
+    parts = encoding.parts or []
+    if parts:
+        max_bit = -1
+        for part in parts:
+            op_bits = part.operand_bits
+            if op_bits is None:
+                continue
+            if len(op_bits) == 2:
+                msb, lsb = int(op_bits[0]), int(op_bits[1])
+                max_bit = max(max_bit, msb, lsb)
+            elif len(op_bits) == 1:
+                max_bit = max(max_bit, int(op_bits[0]))
+        if max_bit >= 0:
+            return max_bit + 1
+
+    bits = encoding.bits
+    if bits is not None:
+        if len(bits) == 2:
+            msb, lsb = int(bits[0]), int(bits[1])
+            return abs(msb - lsb) + 1
+        if len(bits) == 1:
+            return 1
+
+    return fallback
+
+
+def _field_immediate_alignment(encoding: Optional["FieldEncoding"]) -> int:
+    """Derive required immediate alignment from split-field operand bits."""
+    if encoding is None or not encoding.parts:
+        return 1
+
+    min_bit = None
+    for part in encoding.parts:
+        op_bits = part.operand_bits
+        if op_bits is None:
+            continue
+        if len(op_bits) == 2:
+            msb, lsb = int(op_bits[0]), int(op_bits[1])
+            part_min = min(msb, lsb)
+        elif len(op_bits) == 1:
+            part_min = int(op_bits[0])
+        else:
+            continue
+        min_bit = part_min if min_bit is None else min(min_bit, part_min)
+
+    if min_bit is None or min_bit <= 0:
+        return 1
+    return 1 << min_bit
+
+
 @dataclass
 class FieldPart:
     """One piece of a split field: bit range in the opcode and optional operand bit range."""
@@ -96,6 +154,39 @@ class InstructionDef:
     access_width: Optional[int] = None  # bits, for load/store only
     exceptions: List[str] = field(default_factory=list)
     groups: List[str] = field(default_factory=list)
+    _immediate_sampling_profiles: Dict[Tuple[str, int], Tuple[bool, int, int]] = field(
+        default_factory=dict, init=False, repr=False, compare=False
+    )
+
+    def immediate_sampling_profile(
+        self, operand_name: str, *, fallback_size_bits: int = 12
+    ) -> Tuple[bool, int, int]:
+        """Return cached semantic-immediate sampling profile.
+
+        Returns a tuple: (is_shift, width_bits, alignment_bytes).
+        - is_shift: True when immediate_encoding defines shift mode.
+        - width_bits: semantic immediate width for range generation.
+        - alignment_bytes: required alignment in bytes for branch/jump style immediates.
+        """
+        key = (operand_name, int(fallback_size_bits))
+        cached = self._immediate_sampling_profiles.get(key)
+        if cached is not None:
+            return cached
+
+        spec = (self.immediate_encoding or {}).get(operand_name)
+        if spec and spec.get("mode") == "shift":
+            width = max(1, int(spec.get("width", 1)))
+            profile = (True, width, 1)
+        else:
+            width = _field_immediate_width(
+                self.fields.get(operand_name),
+                fallback_size_bits=fallback_size_bits,
+            )
+            alignment = _field_immediate_alignment(self.fields.get(operand_name))
+            profile = (False, width, alignment)
+
+        self._immediate_sampling_profiles[key] = profile
+        return profile
 
     def in_group(self, group: str) -> bool:
         """True if this instruction belongs to the given group (exact or path prefix)."""

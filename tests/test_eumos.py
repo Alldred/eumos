@@ -134,3 +134,40 @@ def test_gpr_fpr_operand_accessors():
     inst2 = dec.from_asm("fadd.s f1, f2, f3")
     assert inst2.fpr_sources() == {"rs1": 2, "rs2": 3}
     assert inst2.fpr_dests() == {"rd": 1}
+
+
+def test_immediate_sampling_profile_comes_from_metadata_and_is_cached():
+    eu = Eumos()
+
+    addi = eu.instructions["addi"]
+    assert addi.immediate_sampling_profile("imm", fallback_size_bits=12) == (
+        False,
+        12,
+        1,
+    )
+
+    beq = eu.instructions["beq"]
+    assert beq.immediate_sampling_profile("imm", fallback_size_bits=12) == (
+        False,
+        13,
+        2,
+    )
+
+    jal = eu.instructions["jal"]
+    assert jal.immediate_sampling_profile("imm", fallback_size_bits=21) == (
+        False,
+        21,
+        2,
+    )
+
+    srai = eu.instructions["srai"]
+    assert srai.immediate_sampling_profile("imm", fallback_size_bits=12) == (
+        True,
+        6,
+        1,
+    )
+    assert srai.immediate_sampling_profile("imm", fallback_size_bits=12) == (
+        True,
+        6,
+        1,
+    )
