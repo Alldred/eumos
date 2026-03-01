@@ -5,7 +5,7 @@
 
 import pytest
 
-from eumos.decoder import Decoder
+from eumos.decoder import Decoder, validate_opcode
 
 
 def test_decoder_from_opc():
@@ -51,3 +51,12 @@ def test_decoder_roundtrip_asm_opc():
 
     assert instance2 is not None
     assert instance2.to_asm() == asm
+
+
+def test_validate_opcode_accepts_valid_word_and_masks_to_32b():
+    assert validate_opcode(0x1_00410093) == 0x00410093
+
+
+def test_validate_opcode_rejects_unknown_encoding():
+    with pytest.raises(ValueError, match="Unknown/invalid opcode encoding"):
+        validate_opcode(0xFFFFFFFF)
