@@ -13,6 +13,14 @@ inputs:
   - rd
   - rs1
   - imm
+operand_aliases:
+  imm:
+    - shamt
+immediate_encoding:
+  imm:
+    mode: shift
+    width: 5
+    prefix: 0x400
 extension: "I"
 groups:
   - alu

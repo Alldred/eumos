@@ -32,6 +32,16 @@ def test_load_instruction_sd_has_split_imm():
     assert len(instr.fields["imm"].parts) >= 1
 
 
+def test_load_instruction_slli_has_immediate_aliases():
+    instrs = instruction_loader.load_all_instructions()
+    instr = instrs["slli"]
+    assert instr.operand_aliases == {"imm": ["shamt"]}
+    assert instr.operand_alias_lookup == {"shamt": "imm"}
+    assert instr.immediate_encoding == {
+        "imm": {"mode": "shift", "width": 6, "prefix": 0}
+    }
+
+
 def test_load_instruction_ecall():
     instrs = instruction_loader.load_all_instructions()
     instr = instrs["ecall"]

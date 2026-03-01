@@ -138,6 +138,28 @@ def test_encode_instruction_shift_immediates_preserve_operation():
     )
 
 
+def test_encode_instruction_shift_immediate_alias_shamt():
+    """Shift-immediate aliases declared in YAML are normalized to the canonical immediate."""
+    instructions = instruction_loader.load_all_instructions()
+    assert instructions["slliw"].operand_aliases == {"imm": ["shamt"]}
+    assert instructions["slliw"].immediate_encoding == {
+        "imm": {"mode": "shift", "width": 5, "prefix": 0}
+    }
+    assert encode_instruction(
+        instructions["slliw"], {"rd": 1, "rs1": 2, "shamt": 3}
+    ) == encode_instruction(instructions["slliw"], {"rd": 1, "rs1": 2, "imm": 3})
+
+
+def test_encode_instruction_immediate_alias_conflict_raises():
+    """Conflicting canonical and alias immediate values are rejected."""
+    instructions = instruction_loader.load_all_instructions()
+    with pytest.raises(ValueError, match="Conflicting immediate values"):
+        encode_instruction(
+            instructions["slli"],
+            {"rd": 1, "rs1": 2, "imm": 1, "shamt": 2},
+        )
+
+
 def test_encode_instruction_i_type_immediate_out_of_range_raises():
     """I-type immediates outside signed 12-bit range are rejected."""
     instructions = instruction_loader.load_all_instructions()

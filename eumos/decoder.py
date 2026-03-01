@@ -16,15 +16,6 @@ from .instance import InstructionInstance
 from .instruction_loader import load_all_instructions
 from .models import FieldEncoding, InstructionDef
 
-_SHIFT_IMM_WIDTHS = {
-    "slli": 6,
-    "srli": 6,
-    "srai": 6,
-    "slliw": 5,
-    "srliw": 5,
-    "sraiw": 5,
-}
-
 
 def _extract_bits(word: int, msb: int, lsb: int) -> int:
     """Extract bits [msb, lsb] from word (inclusive; RISC-V bit 0 is LSB)."""
@@ -154,8 +145,9 @@ def _is_csr_immediate_instruction(instruction: InstructionDef, field_name: str) 
 def _decode_i_immediate(raw: int, instruction: InstructionDef, field_name: str) -> int:
     if field_name != "imm":
         return _sign_extend(raw & 0xFFF, 12)
-    shamt_bits = _SHIFT_IMM_WIDTHS.get(instruction.mnemonic)
-    if shamt_bits is not None:
+    spec = (instruction.immediate_encoding or {}).get(field_name)
+    if spec and spec.get("mode") == "shift":
+        shamt_bits = int(spec["width"])
         return raw & ((1 << shamt_bits) - 1)
     if _is_csr_immediate_instruction(instruction, field_name):
         return raw & 0xFFF
@@ -218,6 +210,7 @@ class Decoder:
         self._ambiguous_lookup: Dict[
             Tuple[int, Optional[int], Optional[int]], List[InstructionDef]
         ] = {}
+        self._funct7_bit25_flexible_keys: set[Tuple[int, int]] = set()
 
         for instr in self._instructions.values():
             key = _lookup_key(instr)
@@ -228,6 +221,22 @@ class Decoder:
                 self._ambiguous_lookup[key].append(instr)
             else:
                 self._lookup[key] = instr
+            imm_spec = (instr.immediate_encoding or {}).get("imm")
+            if (
+                imm_spec
+                and imm_spec.get("mode") == "shift"
+                and int(imm_spec.get("width", 0)) >= 6
+            ):
+                fv = instr.fixed_values or {}
+                opcode = fv.get("opcode")
+                funct3 = fv.get("funct3")
+                funct7 = fv.get("funct7")
+                if (
+                    isinstance(opcode, int)
+                    and isinstance(funct3, int)
+                    and isinstance(funct7, int)
+                ):
+                    self._funct7_bit25_flexible_keys.add((opcode, funct3))
 
     def from_opc(
         self,
@@ -254,8 +263,8 @@ class Decoder:
             or self._lookup.get((opcode, None, funct7))
             or self._lookup.get((opcode, None, None))
         )
-        # RV64 shift-immediate encodings vary bit 25 with shamt[5], so exact funct7 lookup may miss valid opcodes.
-        if instr is None and opcode in (0x13, 0x1B) and funct3 in (0x1, 0x5):
+        # Shift-immediate encodings with shamt[5] set vary funct7 bit 0 (opcode bit 25).
+        if instr is None and (opcode, funct3) in self._funct7_bit25_flexible_keys:
             instr = self._lookup.get((opcode, funct3, funct7 & 0x7E))
 
         # If we found a match, check if there are ambiguous alternatives (same opcode/funct3, different imm/rs2/etc.)

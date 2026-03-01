@@ -6,7 +6,7 @@
 import os
 import re
 import warnings
-from typing import Dict, List, Set
+from typing import Any, Dict, List, Set
 
 from .format_loader import load_all_formats
 from .models import FieldEncoding, FormatDef, Instruction, Operand
@@ -67,6 +67,123 @@ def _build_operands_and_fields(raw: dict, format_obj) -> tuple:
     return operands, fields
 
 
+def _normalize_operand_aliases(
+    file_path: str, raw_aliases: dict | None, operands: Dict[str, Operand]
+) -> Dict[str, List[str]]:
+    """Validate and normalize operand alias mapping from YAML."""
+    if raw_aliases is None:
+        return {}
+    if not isinstance(raw_aliases, dict):
+        raise ValueError(
+            f"{file_path}: 'operand_aliases' must be a mapping of canonical operand -> list of aliases."
+        )
+    normalized: Dict[str, List[str]] = {}
+    alias_owner: Dict[str, str] = {}
+    for canonical, aliases in raw_aliases.items():
+        if not isinstance(canonical, str):
+            raise ValueError(
+                f"{file_path}: operand_aliases keys must be strings, got {type(canonical).__name__}."
+            )
+        canonical_name = canonical.strip()
+        operand = operands.get(canonical_name)
+        if operand is None:
+            raise ValueError(
+                f"{file_path}: operand_aliases key {canonical_name!r} is not a defined operand."
+            )
+        if operand.type != "immediate":
+            raise ValueError(
+                f"{file_path}: operand_aliases currently supports immediate operands only; "
+                f"{canonical_name!r} is type {operand.type!r}."
+            )
+        if not isinstance(aliases, list) or not aliases:
+            raise ValueError(
+                f"{file_path}: operand_aliases[{canonical_name!r}] must be a non-empty list of strings."
+            )
+        clean_aliases: List[str] = []
+        seen = set()
+        for alias in aliases:
+            if not isinstance(alias, str):
+                raise ValueError(
+                    f"{file_path}: operand_aliases[{canonical_name!r}] entries must be strings."
+                )
+            alias_name = alias.strip()
+            if not alias_name:
+                raise ValueError(
+                    f"{file_path}: operand_aliases[{canonical_name!r}] cannot contain empty alias."
+                )
+            if alias_name == canonical_name:
+                raise ValueError(
+                    f"{file_path}: operand_aliases[{canonical_name!r}] cannot repeat canonical name."
+                )
+            if alias_name in operands:
+                raise ValueError(
+                    f"{file_path}: alias {alias_name!r} conflicts with an existing operand name."
+                )
+            if alias_name in seen:
+                continue
+            owner = alias_owner.get(alias_name)
+            if owner is not None and owner != canonical_name:
+                raise ValueError(
+                    f"{file_path}: alias {alias_name!r} is mapped to multiple operands "
+                    f"({owner!r}, {canonical_name!r})."
+                )
+            alias_owner[alias_name] = canonical_name
+            seen.add(alias_name)
+            clean_aliases.append(alias_name)
+        normalized[canonical_name] = clean_aliases
+    return normalized
+
+
+def _normalize_immediate_encoding(
+    file_path: str, raw_encoding: dict | None, operands: Dict[str, Operand]
+) -> Dict[str, Dict[str, Any]]:
+    """Validate and normalize immediate encoding metadata from YAML."""
+    if raw_encoding is None:
+        return {}
+    if not isinstance(raw_encoding, dict):
+        raise ValueError(
+            f"{file_path}: 'immediate_encoding' must be a mapping of operand -> metadata."
+        )
+    normalized: Dict[str, Dict[str, Any]] = {}
+    for canonical, spec in raw_encoding.items():
+        if not isinstance(canonical, str):
+            raise ValueError(
+                f"{file_path}: immediate_encoding keys must be strings, got {type(canonical).__name__}."
+            )
+        canonical_name = canonical.strip()
+        operand = operands.get(canonical_name)
+        if operand is None:
+            raise ValueError(
+                f"{file_path}: immediate_encoding key {canonical_name!r} is not a defined operand."
+            )
+        if operand.type != "immediate":
+            raise ValueError(
+                f"{file_path}: immediate_encoding currently supports immediate operands only; "
+                f"{canonical_name!r} is type {operand.type!r}."
+            )
+        if not isinstance(spec, dict):
+            raise ValueError(
+                f"{file_path}: immediate_encoding[{canonical_name!r}] must be a mapping."
+            )
+        mode = spec.get("mode")
+        if mode != "shift":
+            raise ValueError(
+                f"{file_path}: immediate_encoding[{canonical_name!r}].mode must be 'shift'."
+            )
+        width = spec.get("width")
+        if not isinstance(width, int) or width <= 0:
+            raise ValueError(
+                f"{file_path}: immediate_encoding[{canonical_name!r}].width must be a positive int."
+            )
+        prefix = spec.get("prefix", 0)
+        if not isinstance(prefix, int) or prefix < 0:
+            raise ValueError(
+                f"{file_path}: immediate_encoding[{canonical_name!r}].prefix must be a non-negative int."
+            )
+        normalized[canonical_name] = {"mode": mode, "width": width, "prefix": prefix}
+    return normalized
+
+
 def _load_instruction(
     file_path: str, schema_path: str, formats: Dict[str, FormatDef]
 ) -> Instruction:
@@ -90,6 +207,17 @@ def _load_instruction(
         )
     format_obj = formats[format_name]
     operands, fields = _build_operands_and_fields(raw, format_obj)
+    raw["operand_aliases"] = _normalize_operand_aliases(
+        file_path, raw.get("operand_aliases"), operands
+    )
+    raw["operand_alias_lookup"] = {
+        alias: canonical
+        for canonical, aliases in raw["operand_aliases"].items()
+        for alias in aliases
+    }
+    raw["immediate_encoding"] = _normalize_immediate_encoding(
+        file_path, raw.get("immediate_encoding"), operands
+    )
     raw["format"] = format_obj
     raw["operands"] = operands
     raw["fields"] = fields
