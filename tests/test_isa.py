@@ -84,3 +84,16 @@ def test_resolve_csr_decode_csrrw_then_resolve():
     csr_def2, value2 = isa.resolve_csr(instance, csr_context=ctx)
     assert csr_def2.name == "mepc"
     assert value2 == 0x1000
+
+
+def test_csrrw_to_asm_uses_csr_name():
+    """Decoding a CSRRW word prints CSR name (e.g. 'mtvec') in asm output."""
+    instrs = instruction_loader.load_all_instructions()
+    dec = Decoder(instructions=instrs)
+    # csrrw x0, mtvec, x1 -> opcode=0x73, funct3=1, rd=0, rs1=1, imm=0x305
+    word = 0x73 | (0 << 7) | (1 << 12) | (1 << 15) | (0x305 << 20)
+    instance = dec.from_opc(word)
+    assert instance is not None
+    assert instance.instruction.mnemonic == "csrrw"
+    assert instance.operand_values["imm"] == 0x305
+    assert instance.to_asm() == "csrrw x0, mtvec, x1"

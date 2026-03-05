@@ -4,6 +4,7 @@
 """User data layered on ISA: instruction instances, register context, and operand-level combined view."""
 
 from dataclasses import dataclass, field
+from functools import lru_cache
 from typing import Any, Dict, Iterable, Iterator, Literal, Optional, Tuple, Union
 
 from .constants import FPR_NAME_TO_INDEX, GPR_ABI_NAMES, GPR_NAME_TO_INDEX
@@ -79,6 +80,18 @@ def _reg_to_index(reg: Union[int, str]) -> Optional[int]:
         return None
     idx = GPR_NAME_TO_INDEX.get(reg.lower())
     return idx
+
+
+@lru_cache(maxsize=1)
+def _global_csr_by_address() -> Dict[int, CSRDef]:
+    """Lazy-loaded CSR definitions keyed by 12-bit address, for pretty-printing CSR immediates."""
+    try:
+        from .csr_loader import load_all_csrs
+
+        csrs = load_all_csrs()
+    except Exception:
+        return {}
+    return {int(c.address) & 0xFFF: c for c in csrs.values()}
 
 
 class RegisterContext:
@@ -267,6 +280,21 @@ class InstructionInstance:
                     if self.instruction.is_operand_fpr(op_name)
                     else f"x{value}"
                 )
+            elif (
+                op
+                and op.type == "immediate"
+                and op_name == "imm"
+                and (self.instruction.fixed_values or {}).get("opcode") == 0x73
+                and self.instruction.mnemonic.startswith("csr")
+            ):
+                # CSR immediate: print CSR name (e.g. 'mtvec') when known, otherwise numeric address.
+                try:
+                    addr = int(value) & 0xFFF
+                except (TypeError, ValueError):
+                    operand_strs.append(str(value))
+                else:
+                    csr = _global_csr_by_address().get(addr)
+                    operand_strs.append(csr.name if csr else str(value))
             else:
                 operand_strs.append(str(value))
 
