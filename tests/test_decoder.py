@@ -161,6 +161,19 @@ def test_decode_csr_immediate_is_unsigned():
     assert instance.operand_values["rs1"] == 2
 
 
+def test_from_asm_csrrw_accepts_csr_name():
+    """from_asm supports CSR name for CSR immediate (e.g. 'mtvec')."""
+    dec = _decoder()
+    instance = dec.from_asm("csrrw x0, mtvec, x1")
+    assert instance is not None
+    assert instance.instruction.mnemonic == "csrrw"
+    # rd, rs1 as usual
+    assert instance.operand_values["rd"] == 0
+    assert instance.operand_values["rs1"] == 1
+    # imm should be mtvec's CSR address
+    assert instance.operand_values["imm"] == 0x305
+
+
 def test_decode_unknown_returns_none():
     """Unknown opcode returns None."""
     dec = _decoder()

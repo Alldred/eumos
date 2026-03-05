@@ -81,10 +81,27 @@ def _parse_asm_operand_values(
             else:
                 operand_values[op_name] = _parse_register(val)
         elif op and op.type == "immediate":
-            try:
-                operand_values[op_name] = int(val, 0)
-            except ValueError:
-                raise ValueError(f"Invalid immediate: {val}")
+            # Allow CSR immediates to be specified by CSR name (e.g. 'mtvec') as well as numeric.
+            if _is_csr_immediate_instruction(instruction, op_name):
+                try:
+                    operand_values[op_name] = int(val, 0)
+                except ValueError:
+                    # Fall back to CSR name lookup.
+                    from .csr_loader import load_all_csrs
+
+                    try:
+                        csrs = load_all_csrs()
+                    except Exception:
+                        csrs = {}
+                    csr = csrs.get(val)
+                    if csr is None:
+                        raise ValueError(f"Invalid CSR immediate: {val}")
+                    operand_values[op_name] = int(csr.address) & 0xFFF
+            else:
+                try:
+                    operand_values[op_name] = int(val, 0)
+                except ValueError:
+                    raise ValueError(f"Invalid immediate: {val}")
         else:
             operand_values[op_name] = val
     return operand_values
