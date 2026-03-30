@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: CZERO.NEZ
+mnemonic: czero.nez
+format: R
+asm_format: default
+fixed_values:
+  opcode: 0x33
+  funct3: 0x7
+  funct7: 0x07
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "Zicond"
+groups:
+  - alu
+description: |
+  CZERO.NEZ writes zero to rd when rs2 is nonzero; otherwise it copies rs1.
+  rd = (rs2 != 0) ? 0 : rs1
