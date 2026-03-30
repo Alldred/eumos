@@ -51,6 +51,41 @@ def test_decode_sll_r_type():
     assert instance.operand_values["rs2"] == 5
 
 
+def test_decode_czero_eqz_r_type():
+    """Zicond CZERO.EQZ decodes with rd, rs1, rs2 using funct7=0x07 and funct3=0x5."""
+    dec = _decoder()
+    # Verified in binutils zicond tests: czero.eqz a0, a1, a2
+    word = 0x0EC5D533
+    instance = dec.from_opc(word)
+    assert instance is not None
+    assert instance.instruction.mnemonic == "czero.eqz"
+    assert instance.operand_values["rd"] == 10
+    assert instance.operand_values["rs1"] == 11
+    assert instance.operand_values["rs2"] == 12
+
+
+def test_decode_czero_nez_r_type():
+    """Zicond CZERO.NEZ decodes with rd, rs1, rs2 using funct7=0x07 and funct3=0x7."""
+    dec = _decoder()
+    # Verified in binutils zicond tests: czero.nez a0, a3, a4
+    word = 0x0EE6F533
+    instance = dec.from_opc(word)
+    assert instance is not None
+    assert instance.instruction.mnemonic == "czero.nez"
+    assert instance.operand_values["rd"] == 10
+    assert instance.operand_values["rs1"] == 13
+    assert instance.operand_values["rs2"] == 14
+
+
+def test_from_asm_czero_round_trip():
+    """Zicond instructions parse from asm and encode to the expected opcodes."""
+    dec = _decoder()
+    eqz = dec.from_asm("czero.eqz x10, x11, x12")
+    nez = dec.from_asm("czero.nez x10, x13, x14")
+    assert eqz.to_opc() == 0x0EC5D533
+    assert nez.to_opc() == 0x0EE6F533
+
+
 def test_decode_sd_s_type_split_imm():
     """S-type SD decodes with split immediate."""
     dec = _decoder()

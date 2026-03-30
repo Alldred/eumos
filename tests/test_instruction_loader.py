@@ -50,13 +50,28 @@ def test_load_instruction_ecall():
     assert instr.extension == "I"
 
 
+def test_load_instruction_czero_eqz():
+    instrs = instruction_loader.load_all_instructions()
+    instr = instrs["czero.eqz"]
+    assert isinstance(instr, models.InstructionDef)
+    assert instr.mnemonic == "czero.eqz"
+    assert instr.extension == "Zicond"
+    assert instr.format.name == "R"
+    assert instr.inputs == ["rd", "rs1", "rs2"]
+    assert instr.fixed_values.get("opcode") == 0x33
+    assert instr.fixed_values.get("funct3") == 0x5
+    assert instr.fixed_values.get("funct7") == 0x07
+
+
 def test_load_all_instructions_returns_dict():
     instrs = instruction_loader.load_all_instructions()
     assert isinstance(instrs, dict)
-    assert len(instrs) == 122
+    assert len(instrs) == 124
     assert "addi" in instrs
     assert "sd" in instrs
     assert "beq" in instrs
+    assert "czero.eqz" in instrs
+    assert "czero.nez" in instrs
     addi = instrs["addi"]
     assert addi.name == "ADDI"
     assert addi.mnemonic == "addi"

@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: CZERO.EQZ
+mnemonic: czero.eqz
+format: R
+asm_format: default
+fixed_values:
+  opcode: 0x33
+  funct3: 0x5
+  funct7: 0x07
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "Zicond"
+groups:
+  - alu
+description: |
+  CZERO.EQZ writes zero to rd when rs2 is zero; otherwise it copies rs1.
+  rd = (rs2 == 0) ? 0 : rs1
