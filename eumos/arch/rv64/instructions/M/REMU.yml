@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: REMU
+mnemonic: remu
+format: R
+asm_format: default
+fixed_values:
+  opcode: 0x33
+  funct3: 0x7
+  funct7: 0x01
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "M"
+groups:
+  - alu/arith
+behavior:
+  arithmetic:
+    operation: div
+    result: remainder
+    width: xlen
+    signed_operands: false
+    rounding: toward_zero
+    divide_by_zero: dividend
+description: |
+  REMU computes the unsigned remainder using integer division.
+  If rs2 == 0, rd = rs1.
+  Otherwise, rd = unsigned(rs1) % unsigned(rs2).

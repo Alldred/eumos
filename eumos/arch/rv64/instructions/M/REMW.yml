@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: REMW
+mnemonic: remw
+format: R
+asm_format: default
+fixed_values:
+  opcode: 0x3B
+  funct3: 0x6
+  funct7: 0x01
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "M"
+groups:
+  - alu/arith
+behavior:
+  arithmetic:
+    operation: div
+    result: remainder
+    width: 32
+    signed_operands: true
+    rounding: toward_zero
+    divide_by_zero: dividend_then_sign_extend
+    overflow:
+      case: int_min_div_neg_one
+      result: zero
+description: |
+  REMW computes the signed 32-bit remainder using a quotient rounded toward zero, then sign-extends it.
+  If rs2[31:0] == 0, rd = sign_extend(rs1[31:0]).
+  If rs1[31:0] == 0x8000_0000 and rs2[31:0] == 0xFFFF_FFFF, rd = 0.
+  Otherwise, rd = sign_extend(
+    signed(rs1[31:0]) - trunc_toward_zero(signed(rs1[31:0]) / signed(rs2[31:0])) * signed(rs2[31:0])
+  ).

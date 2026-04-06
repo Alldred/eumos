@@ -43,6 +43,15 @@ mapping:
           mode: {type: str, required: true}
           width: {type: int, required: true}
           prefix: {type: int, required: false}
+  behavior:
+    type: map
+    required: false
+    allowempty: false
+    matching-rule: any
+    mapping:
+      regex;(.*):
+        type: any
+        required: false
   description: {type: str, required: false}
   imm: {type: any, required: false}
   extension: {type: str, required: true}

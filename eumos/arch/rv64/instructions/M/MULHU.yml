@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: MULHU
+mnemonic: mulhu
+format: R
+asm_format: default
+fixed_values:
+  opcode: 0x33
+  funct3: 0x3
+  funct7: 0x01
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "M"
+groups:
+  - alu/arith
+description: |
+  MULHU multiplies unsigned rs1 and unsigned rs2 and writes the upper XLEN bits to rd.
+  rd = (unsigned(rs1) * unsigned(rs2))[2*XLEN-1:XLEN]

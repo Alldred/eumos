@@ -11,7 +11,7 @@ fixed_values:
 inputs:
   - rd
   - imm
-extension: "I"
+extension: "Zicsr"
 groups:
   - system/csr
 description: |

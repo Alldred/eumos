@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: MULW
+mnemonic: mulw
+format: R
+asm_format: default
+fixed_values:
+  opcode: 0x3B
+  funct3: 0x0
+  funct7: 0x01
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "M"
+groups:
+  - alu/arith
+description: |
+  MULW multiplies the low 32 bits of rs1 and rs2 and writes the sign-extended lower 32-bit result to rd.
+  rd = sign_extend((rs1[31:0] * rs2[31:0])[31:0])

@@ -43,6 +43,7 @@ Each **InstructionDef** has (among others):
 - **operands** — Dict of operand name → **Operand** (type, size, optional data). These are the logical inputs (rd, rs1, rs2, imm, etc.).
 - **fields** — Dict of field name → **FieldEncoding** (bit ranges or parts for split immediates). Describes how operands and fixed values are encoded in the 32-bit word.
 - **fixed_values** — opcode, funct3, funct7, etc., for matching during decode.
+- **behavior** — Optional structured semantics metadata for edge cases and non-trivial rules (for example divide-by-zero handling, overflow behavior, or future compressed-instruction quirks).
 - **extension** — e.g. `"I"`, `"M"`, `"F"`, `"D"`.
 - **description** — Human-readable description.
 - **groups** — List of group tags (e.g. `["alu/arith"]`) for categorisation.

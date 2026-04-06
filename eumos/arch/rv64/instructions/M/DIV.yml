@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: DIV
+mnemonic: div
+format: R
+asm_format: default
+fixed_values:
+  opcode: 0x33
+  funct3: 0x4
+  funct7: 0x01
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "M"
+groups:
+  - alu/arith
+behavior:
+  arithmetic:
+    operation: div
+    result: quotient
+    width: xlen
+    signed_operands: true
+    rounding: toward_zero
+    divide_by_zero: all_ones
+    overflow:
+      case: int_min_div_neg_one
+      result: dividend
+description: |
+  DIV performs signed integer division with quotient rounded toward zero.
+  If rs2 == 0, rd is all 1s.
+  If rs1 == INT_MIN and rs2 == -1, rd = rs1.
+  Otherwise, rd = trunc_toward_zero(signed(rs1) / signed(rs2)).

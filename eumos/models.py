@@ -148,6 +148,7 @@ class InstructionDef:
     operand_aliases: Dict[str, List[str]] = field(default_factory=dict)
     operand_alias_lookup: Dict[str, str] = field(default_factory=dict)
     immediate_encoding: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    behavior: Dict[str, Any] = field(default_factory=dict)
     extension: str = ""
     asm_format: Optional[str] = None
     source_file: Optional[str] = None

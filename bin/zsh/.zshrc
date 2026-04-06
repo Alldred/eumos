@@ -28,3 +28,12 @@ source .venv/bin/activate
 # Install pre-commit
 echo "# Setting up pre-commit hooks"
 pre-commit install > /dev/null
+
+# Local aliases mirrored from ~/.zshrc for the Eumos shell.
+alias gs='git status'
+alias gcm='git switch main'
+alias gp='git pull'
+alias gb='git branch'
+alias gnb='git switch -c '
+alias ggb='git switch -'
+alias gpar='gcm && gp && ggb && git merge main'
