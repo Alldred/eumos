@@ -16,6 +16,21 @@ inputs:
 extension: "M"
 groups:
   - alu/arith
+behavior:
+  arithmetic:
+    operation: div
+    result: remainder
+    width: 32
+    signed_operands: true
+    quotient_rounding: toward_zero
+    divide_by_zero: dividend_then_sign_extend
+    overflow:
+      case: int_min_div_neg_one
+      result: zero
 description: |
-  REMW divides signed 32-bit rs1 by signed 32-bit rs2 and writes the sign-extended 32-bit remainder to rd.
-  rd = sign_extend(signed(rs1[31:0]) % signed(rs2[31:0]))
+  REMW computes the signed 32-bit remainder using a quotient rounded toward zero, then sign-extends it.
+  If rs2[31:0] == 0, rd = sign_extend(rs1[31:0]).
+  If rs1[31:0] == 0x8000_0000 and rs2[31:0] == 0xFFFF_FFFF, rd = 0.
+  Otherwise, rd = sign_extend(
+    signed(rs1[31:0]) - trunc_toward_zero(signed(rs1[31:0]) / signed(rs2[31:0])) * signed(rs2[31:0])
+  ).

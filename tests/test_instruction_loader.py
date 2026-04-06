@@ -60,6 +60,26 @@ def test_load_instruction_mul_extension():
     assert instr.fixed_values.get("funct7") == 0x01
 
 
+def test_load_instruction_div_behavior_metadata():
+    instrs = instruction_loader.load_all_instructions()
+    instr = instrs["div"]
+    assert instr.extension == "M"
+    assert instr.behavior == {
+        "arithmetic": {
+            "operation": "div",
+            "result": "quotient",
+            "width": "xlen",
+            "signed_operands": True,
+            "rounding": "toward_zero",
+            "divide_by_zero": "all_ones",
+            "overflow": {
+                "case": "int_min_div_neg_one",
+                "result": "dividend",
+            },
+        }
+    }
+
+
 def test_load_instruction_csrrw_is_zicsr():
     instrs = instruction_loader.load_all_instructions()
     instr = instrs["csrrw"]

@@ -16,6 +16,15 @@ inputs:
 extension: "M"
 groups:
   - alu/arith
+behavior:
+  arithmetic:
+    operation: div
+    result: quotient
+    width: 32
+    signed_operands: false
+    rounding: toward_zero
+    divide_by_zero: all_ones_then_sign_extend
 description: |
-  DIVUW divides unsigned 32-bit rs1 by unsigned 32-bit rs2 and writes the sign-extended 32-bit quotient to rd.
-  rd = sign_extend(unsigned(rs1[31:0]) / unsigned(rs2[31:0]))
+  DIVUW performs unsigned 32-bit integer division with quotient rounded toward zero.
+  If rs2[31:0] == 0, rd = sign_extend(0xFFFF_FFFF).
+  Otherwise, rd = sign_extend(unsigned(rs1[31:0]) / unsigned(rs2[31:0])).

@@ -16,6 +16,15 @@ inputs:
 extension: "M"
 groups:
   - alu/arith
+behavior:
+  arithmetic:
+    operation: div
+    result: remainder
+    width: xlen
+    signed_operands: false
+    quotient_rounding: toward_zero
+    divide_by_zero: dividend
 description: |
-  REMU divides unsigned rs1 by unsigned rs2 and writes the remainder to rd.
-  rd = unsigned(rs1) % unsigned(rs2)
+  REMU computes the unsigned remainder using integer division.
+  If rs2 == 0, rd = rs1.
+  Otherwise, rd = unsigned(rs1) % unsigned(rs2).

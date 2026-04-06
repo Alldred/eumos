@@ -16,6 +16,19 @@ inputs:
 extension: "M"
 groups:
   - alu/arith
+behavior:
+  arithmetic:
+    operation: div
+    result: quotient
+    width: 32
+    signed_operands: true
+    rounding: toward_zero
+    divide_by_zero: all_ones_then_sign_extend
+    overflow:
+      case: int_min_div_neg_one
+      result: dividend_then_sign_extend
 description: |
-  DIVW divides signed 32-bit rs1 by signed 32-bit rs2 and writes the sign-extended 32-bit quotient to rd.
-  rd = sign_extend(signed(rs1[31:0]) / signed(rs2[31:0]))
+  DIVW performs signed 32-bit integer division with quotient rounded toward zero.
+  If rs2[31:0] == 0, rd = sign_extend(0xFFFF_FFFF).
+  If rs1[31:0] == 0x8000_0000 and rs2[31:0] == 0xFFFF_FFFF, rd = sign_extend(0x8000_0000).
+  Otherwise, rd = sign_extend(trunc_toward_zero(signed(rs1[31:0]) / signed(rs2[31:0]))).

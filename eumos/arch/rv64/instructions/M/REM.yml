@@ -16,6 +16,19 @@ inputs:
 extension: "M"
 groups:
   - alu/arith
+behavior:
+  arithmetic:
+    operation: div
+    result: remainder
+    width: xlen
+    signed_operands: true
+    quotient_rounding: toward_zero
+    divide_by_zero: dividend
+    overflow:
+      case: int_min_div_neg_one
+      result: zero
 description: |
-  REM divides signed rs1 by signed rs2 and writes the remainder to rd.
-  rd = signed(rs1) % signed(rs2)
+  REM computes the signed remainder using a quotient rounded toward zero.
+  If rs2 == 0, rd = rs1.
+  If rs1 == INT_MIN and rs2 == -1, rd = 0.
+  Otherwise, rd = signed(rs1) - trunc_toward_zero(signed(rs1) / signed(rs2)) * signed(rs2).

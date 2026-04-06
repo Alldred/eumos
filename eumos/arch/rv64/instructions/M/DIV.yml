@@ -16,6 +16,19 @@ inputs:
 extension: "M"
 groups:
   - alu/arith
+behavior:
+  arithmetic:
+    operation: div
+    result: quotient
+    width: xlen
+    signed_operands: true
+    rounding: toward_zero
+    divide_by_zero: all_ones
+    overflow:
+      case: int_min_div_neg_one
+      result: dividend
 description: |
-  DIV divides signed rs1 by signed rs2 and writes the quotient to rd.
-  rd = signed(rs1) / signed(rs2)
+  DIV performs signed integer division with quotient rounded toward zero.
+  If rs2 == 0, rd is all 1s.
+  If rs1 == INT_MIN and rs2 == -1, rd = rs1.
+  Otherwise, rd = trunc_toward_zero(signed(rs1) / signed(rs2)).

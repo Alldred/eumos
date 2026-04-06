@@ -16,6 +16,15 @@ inputs:
 extension: "M"
 groups:
   - alu/arith
+behavior:
+  arithmetic:
+    operation: div
+    result: remainder
+    width: 32
+    signed_operands: false
+    quotient_rounding: toward_zero
+    divide_by_zero: dividend_then_sign_extend
 description: |
-  REMUW divides unsigned 32-bit rs1 by unsigned 32-bit rs2 and writes the sign-extended 32-bit remainder to rd.
-  rd = sign_extend(unsigned(rs1[31:0]) % unsigned(rs2[31:0]))
+  REMUW computes the unsigned 32-bit remainder and sign-extends the 32-bit result to XLEN.
+  If rs2[31:0] == 0, rd = sign_extend(rs1[31:0]).
+  Otherwise, rd = sign_extend(unsigned(rs1[31:0]) % unsigned(rs2[31:0])).
