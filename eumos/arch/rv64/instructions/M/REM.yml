@@ -22,7 +22,7 @@ behavior:
     result: remainder
     width: xlen
     signed_operands: true
-    quotient_rounding: toward_zero
+    rounding: toward_zero
     divide_by_zero: dividend
     overflow:
       case: int_min_div_neg_one

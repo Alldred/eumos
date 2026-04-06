@@ -22,7 +22,7 @@ behavior:
     result: remainder
     width: 32
     signed_operands: false
-    quotient_rounding: toward_zero
+    rounding: toward_zero
     divide_by_zero: dividend_then_sign_extend
 description: |
   REMUW computes the unsigned 32-bit remainder and sign-extends the 32-bit result to XLEN.

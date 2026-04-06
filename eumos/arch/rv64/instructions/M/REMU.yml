@@ -22,7 +22,7 @@ behavior:
     result: remainder
     width: xlen
     signed_operands: false
-    quotient_rounding: toward_zero
+    rounding: toward_zero
     divide_by_zero: dividend
 description: |
   REMU computes the unsigned remainder using integer division.
