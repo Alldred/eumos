@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: DIV
+mnemonic: div
+format: R
+asm_format: default
+fixed_values:
+  opcode: 0x33
+  funct3: 0x4
+  funct7: 0x01
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "M"
+groups:
+  - alu/arith
+description: |
+  DIV divides signed rs1 by signed rs2 and writes the quotient to rd.
+  rd = signed(rs1) / signed(rs2)

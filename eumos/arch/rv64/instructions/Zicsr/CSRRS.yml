@@ -1,20 +1,20 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Stuart Alldred.
 
-name: CSRRC
-mnemonic: csrrc
+name: CSRRS
+mnemonic: csrrs
 format: I
 asm_format: csr
 fixed_values:
   opcode: 0x73
-  funct3: 0x3
+  funct3: 0x2
 inputs:
   - rd
   - rs1
   - imm
-extension: "I"
+extension: "Zicsr"
 groups:
   - system/csr
 description: |
-  CSRRC atomically reads and clears bits in the CSR.
-  t = CSR[imm]; CSR[imm] = t & ~rs1; rd = t
+  CSRRS atomically reads and sets bits in the CSR.
+  t = CSR[imm]; CSR[imm] = t | rs1; rd = t

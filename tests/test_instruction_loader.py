@@ -50,6 +50,22 @@ def test_load_instruction_ecall():
     assert instr.extension == "I"
 
 
+def test_load_instruction_mul_extension():
+    instrs = instruction_loader.load_all_instructions()
+    instr = instrs["mul"]
+    assert instr.mnemonic == "mul"
+    assert instr.extension == "M"
+    assert instr.format.name == "R"
+    assert instr.fixed_values.get("opcode") == 0x33
+    assert instr.fixed_values.get("funct7") == 0x01
+
+
+def test_load_instruction_csrrw_is_zicsr():
+    instrs = instruction_loader.load_all_instructions()
+    instr = instrs["csrrw"]
+    assert instr.extension == "Zicsr"
+
+
 def test_load_instruction_czero_eqz():
     instrs = instruction_loader.load_all_instructions()
     instr = instrs["czero.eqz"]
@@ -66,10 +82,12 @@ def test_load_instruction_czero_eqz():
 def test_load_all_instructions_returns_dict():
     instrs = instruction_loader.load_all_instructions()
     assert isinstance(instrs, dict)
-    assert len(instrs) == 124
+    assert len(instrs) == 137
     assert "addi" in instrs
     assert "sd" in instrs
     assert "beq" in instrs
+    assert "mul" in instrs
+    assert "mulw" in instrs
     assert "czero.eqz" in instrs
     assert "czero.nez" in instrs
     addi = instrs["addi"]

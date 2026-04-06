@@ -57,6 +57,14 @@ def test_encode_instruction_r_type():
     assert opc_direct == opc_instance
 
 
+def test_encode_instruction_m_extension_r_type():
+    """M-extension R-type instructions encode with funct7=1 and expected opcode."""
+    opc_instance = _instance_opc("mul x3, x4, x5")
+    opc_direct = _encode_direct("mul", {"rd": 3, "rs1": 4, "rs2": 5})
+    assert opc_direct == 0x025201B3
+    assert opc_direct == opc_instance
+
+
 def test_encode_instruction_i_type():
     """I-type: encode_instruction matches direct operand_values."""
     opc_instance = _instance_opc("addi x1, x2, 4")

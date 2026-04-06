@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Stuart Alldred.
+
+name: REMU
+mnemonic: remu
+format: R
+asm_format: default
+fixed_values:
+  opcode: 0x33
+  funct3: 0x7
+  funct7: 0x01
+inputs:
+  - rd
+  - rs1
+  - rs2
+extension: "M"
+groups:
+  - alu/arith
+description: |
+  REMU divides unsigned rs1 by unsigned rs2 and writes the remainder to rd.
+  rd = unsigned(rs1) % unsigned(rs2)

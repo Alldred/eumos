@@ -12,7 +12,7 @@ inputs:
   - rd
   - rs1
   - imm
-extension: "I"
+extension: "Zicsr"
 groups:
   - system/csr
 description: |

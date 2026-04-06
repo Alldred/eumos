@@ -51,6 +51,34 @@ def test_decode_sll_r_type():
     assert instance.operand_values["rs2"] == 5
 
 
+def test_decode_mul_r_type():
+    """R-type MUL (M extension) decodes with rd, rs1, rs2 and funct7=1."""
+    dec = _decoder()
+    # mul x3, x4, x5 -> opcode=0x33, funct3=0, funct7=1
+    word = 0x025201B3
+    instance = dec.from_opc(word)
+    assert instance is not None
+    assert instance.instruction.mnemonic == "mul"
+    assert instance.instruction.extension == "M"
+    assert instance.operand_values["rd"] == 3
+    assert instance.operand_values["rs1"] == 4
+    assert instance.operand_values["rs2"] == 5
+
+
+def test_decode_mulw_r_type():
+    """RV64 MULW decodes as M extension using opcode 0x3B."""
+    dec = _decoder()
+    # mulw x3, x4, x5 -> opcode=0x3B, funct3=0, funct7=1
+    word = 0x025201BB
+    instance = dec.from_opc(word)
+    assert instance is not None
+    assert instance.instruction.mnemonic == "mulw"
+    assert instance.instruction.extension == "M"
+    assert instance.operand_values["rd"] == 3
+    assert instance.operand_values["rs1"] == 4
+    assert instance.operand_values["rs2"] == 5
+
+
 def test_decode_czero_eqz_r_type():
     """Zicond CZERO.EQZ decodes with rd, rs1, rs2 using funct7=0x07 and funct3=0x5."""
     dec = _decoder()
